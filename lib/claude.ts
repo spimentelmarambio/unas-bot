@@ -2,7 +2,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { InterpretedMessageSchema, type InterpretedMessage } from "./schemas/message";
 
-const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
+// Haiku - cheapest tier. The task here (classify a short WhatsApp message
+// into log_income/query_summary/other and extract a couple of fields) is
+// simple enough that it doesn't need a stronger, pricier model.
+const MODEL = process.env.CLAUDE_MODEL || "claude-haiku-4-5-20251001";
 
 let cachedClient: Anthropic | null = null;
 
