@@ -2,7 +2,7 @@
 
 Bot de WhatsApp para que alguien que hace servicios de manicure/pedicura pueda avisar por WhatsApp cuánto cobró por cada servicio, y preguntar cuánto lleva ganado en el mes — sin usar ninguna app nueva.
 
-Es un proyecto separado del tracker de gastos personal "Lukas", pero reutiliza la misma base de datos Neon Postgres (en su propia tabla, `NailIncomeEntry`) para no pagar/crear otra base.
+Es un proyecto separado del tracker de gastos personal "Lukas", pero reutiliza la misma base de datos Neon Postgres para no pagar/crear otra. Vive en su propio schema de Postgres (`unas_bot`, separado del `public` que usa Lukas) - **importante**: la URL de conexión tiene que llevar `?schema=unas_bot` (ver `.env.example`), o Prisma va a intentar administrar el schema `public` completo de Lukas y puede ofrecer borrar sus tablas al detectar que no las declara este proyecto.
 
 ## Cómo funciona
 
@@ -19,7 +19,7 @@ Es un proyecto separado del tracker de gastos personal "Lukas", pero reutiliza l
 
 Copiá `.env.example` a `.env` y completá:
 
-- `DATABASE_URL` / `DIRECT_URL`: las mismas de Lukas (mismo proyecto Neon).
+- `DATABASE_URL` / `DIRECT_URL`: las mismas de Lukas (mismo proyecto Neon), pero agregando `&schema=unas_bot` al final de cada una.
 - `ANTHROPIC_API_KEY`: puede ser la misma que usa Lukas.
 - Las variables `WHATSAPP_*` (ver siguiente sección).
 

@@ -3,13 +3,19 @@ generator client {
   output   = "../lib/generated/prisma"
 }
 
+// The connection string carries `?schema=unas_bot` (see .env / .env.example),
+// which makes Postgres's search_path resolve to that schema by default for
+// this connection - so this project (including Prisma's own internal
+// _prisma_migrations bookkeeping table) only ever creates/reads/writes
+// inside "unas_bot", never "public" (Lukas's schema). Do NOT switch this to
+// the `schemas = [...]` + `@@schema(...)` multi-schema feature instead: that
+// only scopes the *models*, not Prisma's internal migrations table, which
+// still resolves through the connection's default search_path ("public")
+// and would then collide with Lukas's own migration history.
 datasource db {
   provider = "postgresql"
 }
 
-// Un registro por servicio de uñas cobrado. Vive en la misma base Neon que
-// Lukas, pero en su propia tabla — este schema no declara ni toca ninguna
-// tabla de Lukas.
 model NailIncomeEntry {
   id           String   @id @default(cuid())
   amount       Decimal  @db.Decimal(14, 2)
