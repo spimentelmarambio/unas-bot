@@ -27,3 +27,7 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# prisma generated client
+/lib/generated
+
