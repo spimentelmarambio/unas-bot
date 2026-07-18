@@ -3,7 +3,7 @@ import { verifyWebhookSignature, parseIncomingMessage, sendWhatsAppMessage } fro
 import { interpretMessage } from "@/lib/claude";
 import { createTransaction, getSummary, monthRange } from "@/lib/transactions";
 import { dateOnlyInSantiago, parseDateOnly } from "@/lib/dates";
-import { SERVICE_TYPE_LABELS } from "@/lib/schemas/message";
+import { SERVICE_TYPE_LABELS, type Action } from "@/lib/schemas/message";
 
 function formatCLP(amount: number): string {
   return amount.toLocaleString("es-CL", {
@@ -35,6 +35,36 @@ export function GET(request: Request) {
   return NextResponse.json({ error: "No autorizado" }, { status: 403 });
 }
 
+// Runs one action and returns a short line describing what it did, or null
+// for "query_summary"/"other" (handled separately since they don't log
+// anything and shouldn't repeat the monthly totals per action).
+async function runLoggingAction(action: Action, whatsappFrom: string): Promise<string | null> {
+  if (action.intent === "log_income") {
+    const serviceLabel = SERVICE_TYPE_LABELS[action.serviceType];
+    await createTransaction({
+      type: "INCOME",
+      amount: action.amount,
+      description: serviceLabel,
+      serviceType: action.serviceType,
+      clientName: action.clientName,
+      date: action.date ? parseDateOnly(action.date) : dateOnlyInSantiago(),
+      whatsappFrom,
+    });
+    return `${serviceLabel} +${formatCLP(action.amount)}${action.clientName ? ` (${action.clientName})` : ""}`;
+  }
+  if (action.intent === "log_expense") {
+    await createTransaction({
+      type: "EXPENSE",
+      amount: action.amount,
+      description: action.description,
+      date: action.date ? parseDateOnly(action.date) : dateOnlyInSantiago(),
+      whatsappFrom,
+    });
+    return `${action.description} -${formatCLP(action.amount)}`;
+  }
+  return null;
+}
+
 export async function POST(request: Request) {
   const rawBody = await request.text();
 
@@ -57,44 +87,42 @@ export async function POST(request: Request) {
 
   try {
     const interpreted = await interpretMessage(incoming.text);
-    let reply: string;
 
-    if (interpreted.intent === "log_income") {
-      const serviceLabel = SERVICE_TYPE_LABELS[interpreted.serviceType];
-      await createTransaction({
-        type: "INCOME",
-        amount: interpreted.amount,
-        description: serviceLabel,
-        serviceType: interpreted.serviceType,
-        clientName: interpreted.clientName,
-        date: interpreted.date ? parseDateOnly(interpreted.date) : dateOnlyInSantiago(),
-        whatsappFrom: incoming.from,
-      });
+    // A single message can mention several things at once (an income AND
+    // an expense) - log every action, then reply once with everything that
+    // got anotado plus the month totals, instead of one reply per action.
+    const loggedLines: string[] = [];
+    let summaryReply: string | null = null;
+    let sawOther = false;
+
+    for (const action of interpreted.actions) {
+      if (action.intent === "query_summary") {
+        const summary = await getSummary(monthRange(action.month));
+        const period = action.month ? "" : " este mes";
+        summaryReply = `Ingresos${period}: ${formatCLP(summary.incomeTotal)} (${
+          summary.incomeCount
+        } servicios). Gastos: ${formatCLP(summary.expenseTotal)}. Neto: ${formatCLP(summary.net)}.`;
+      } else if (action.intent === "other") {
+        sawOther = true;
+      } else {
+        const line = await runLoggingAction(action, incoming.from);
+        if (line) loggedLines.push(line);
+      }
+    }
+
+    let reply: string;
+    if (loggedLines.length > 0) {
       const summary = await getSummary(monthRange());
-      reply = `Anotado: ${serviceLabel} por ${formatCLP(interpreted.amount)}${
-        interpreted.clientName ? ` (${interpreted.clientName})` : ""
-      }. Llevas ${formatCLP(summary.incomeTotal)} en ${summary.incomeCount} servicios este mes.`;
-    } else if (interpreted.intent === "log_expense") {
-      await createTransaction({
-        type: "EXPENSE",
-        amount: interpreted.amount,
-        description: interpreted.description,
-        date: interpreted.date ? parseDateOnly(interpreted.date) : dateOnlyInSantiago(),
-        whatsappFrom: incoming.from,
-      });
-      const summary = await getSummary(monthRange());
-      reply = `Anotado: gasto de ${formatCLP(interpreted.amount)} en ${
-        interpreted.description
-      }. Llevas ${formatCLP(summary.expenseTotal)} en gastos este mes.`;
-    } else if (interpreted.intent === "query_summary") {
-      const summary = await getSummary(monthRange(interpreted.month));
-      const period = interpreted.month ? "" : " este mes";
-      reply = `Ingresos${period}: ${formatCLP(summary.incomeTotal)} (${
-        summary.incomeCount
-      } servicios). Gastos: ${formatCLP(summary.expenseTotal)}. Neto: ${formatCLP(summary.net)}.`;
-    } else {
+      reply = `Anotado: ${loggedLines.join(", ")}. Llevas ${formatCLP(
+        summary.incomeTotal
+      )} en ingresos y ${formatCLP(summary.expenseTotal)} en gastos este mes.`;
+    } else if (summaryReply) {
+      reply = summaryReply;
+    } else if (sawOther) {
       reply =
         "Puedo anotar tus ingresos (ej: 'hice un esmaltado permanente de 15000'), tus gastos (ej: 'gasté 20000 en insumos'), o decirte cuánto llevas en el mes (ej: '¿cuánto llevo este mes?').";
+    } else {
+      reply = "No entendí el mensaje, ¿podés reformularlo?";
     }
 
     await sendWhatsAppMessage(incoming.from, reply);

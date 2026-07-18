@@ -41,11 +41,21 @@ const OtherSchema = z.object({
   intent: z.literal("other"),
 });
 
-export const InterpretedMessageSchema = z.discriminatedUnion("intent", [
+export const ActionSchema = z.discriminatedUnion("intent", [
   LogIncomeSchema,
   LogExpenseSchema,
   QuerySummarySchema,
   OtherSchema,
 ]);
+
+export type Action = z.infer<typeof ActionSchema>;
+
+// A single WhatsApp message can mention more than one thing at once (e.g.
+// "hice un kapping de 28000 y compré insumos por 20000") - Claude extracts
+// one action per thing mentioned, so all of them get registered instead of
+// just the first.
+export const InterpretedMessageSchema = z.object({
+  actions: z.array(ActionSchema).min(1),
+});
 
 export type InterpretedMessage = z.infer<typeof InterpretedMessageSchema>;
