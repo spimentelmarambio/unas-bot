@@ -42,6 +42,12 @@ Copiá `.env.example` a `.env` y completá:
    - Callback URL: `https://<tu-proyecto>.vercel.app/api/webhook/whatsapp`
    - Verify token: el mismo valor que pusiste en `WHATSAPP_VERIFY_TOKEN`.
 3. Suscribite al campo `messages`.
+4. **Paso fácil de saltarse:** guardar la URL del webhook NO alcanza para que lleguen mensajes reales - también hay que suscribir explícitamente la app a tu WhatsApp Business Account (WABA). Sin este paso, solo funciona el botón "Enviar al servidor" de prueba de Meta (que manda un payload de ejemplo), pero un mensaje real de WhatsApp nunca dispara el webhook. Con el `WABA_ID` (visible en "API Setup", como "WhatsApp Business Account ID") y el access token, corré:
+   ```bash
+   curl -X POST "https://graph.facebook.com/v21.0/<WABA_ID>/subscribed_apps" \
+     -H "Authorization: Bearer <WHATSAPP_ACCESS_TOKEN>"
+   ```
+   Debería responder `{"success":true}`.
 
 ### 4. Probar
 

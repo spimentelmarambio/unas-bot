@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Uñas Bot",
-  description: "Bot de WhatsApp para registrar ingresos de servicios de uñas",
+  title: "MartiNails",
+  description: "Bot de WhatsApp para registrar ingresos y gastos de MartiNails",
 };
 
 export default function RootLayout({

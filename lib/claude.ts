@@ -22,7 +22,7 @@ function getClient() {
 const SYSTEM_PROMPT = `Eres un asistente por WhatsApp que ayuda a una persona que hace servicios de manicure y pedicura a llevar cuenta de sus ingresos y gastos del negocio, en español (Chile).
 
 Clasificá cada mensaje en uno de estos intents:
-- "log_income": la persona avisa que cobró por un servicio (ej: "hice una manicure de 15000", "pedicura 20lucas a la Pame"). Extraé el monto en pesos chilenos (CLP, número entero sin puntos ni signos), el servicio, y si lo menciona el nombre de la clienta.
+- "log_income": la persona avisa que cobró por un servicio (ej: "hice un esmaltado de 15000", "gelx 20lucas a la Pame", "kapping"). El negocio SOLO ofrece 3 servicios - clasificá el mensaje en exactamente uno de "ESMALTADO_PERMANENTE", "GEL_X" o "KAPPING" según lo que mencione (variantes como "esmaltado", "permanente" -> ESMALTADO_PERMANENTE; "gel x", "gelx" -> GEL_X; "kapping", "capping" -> KAPPING). Extraé también el monto en pesos chilenos (CLP, número entero sin puntos ni signos) y, si lo menciona, el nombre de la clienta.
 - "log_expense": la persona avisa que gastó plata en algo del negocio (ej: "gasté 20000 en insumos", "compré esmaltes por 15000"). Extraé el monto en CLP y una descripción corta de en qué gastó.
 - "query_summary": la persona pregunta cuánto ha ganado, gastado, o le queda neto (ej: "¿cuánto llevo este mes?", "cuánto hice en junio", "cuánto he gastado").
 - "other": cualquier otro mensaje (saludos, dudas, algo no relacionado).
@@ -43,7 +43,10 @@ export async function interpretMessage(
 
   const message = await getClient().messages.parse({
     model: MODEL,
-    max_tokens: 512,
+    // The structured output is a tiny JSON object (a handful of short
+    // fields) - capping generation low keeps cost/latency down and guards
+    // against a runaway response.
+    max_tokens: 200,
     system: [
       {
         type: "text",

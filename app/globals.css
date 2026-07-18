@@ -1,0 +1,91 @@
+:root {
+  --pink-bg: #fdf1f6;
+  --pink-bg-2: #fbe4ee;
+  --card: #ffffff;
+  --border: #f6d3e3;
+  --accent: #d9538a;
+  --accent-dark: #b8386c;
+  --text: #4a2b3a;
+  --muted: #9a7e8a;
+  --income: #2f9e63;
+  --expense: #e0568a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, var(--pink-bg) 0%, var(--pink-bg-2) 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+a {
+  color: var(--accent-dark);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(217, 83, 138, 0.08);
+}
+
+.btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--accent-dark);
+}
+
+.input {
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  background: #fff;
+  color: var(--text);
+}
+
+.input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+table.pretty {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table.pretty th {
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 0.6rem 0.9rem;
+  border-bottom: 2px solid var(--border);
+}
+
+table.pretty td {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--pink-bg-2);
+}
+
+table.pretty tr:last-child td {
+  border-bottom: none;
+}
+
+table.pretty tbody tr:hover {
+  background: var(--pink-bg);
+}

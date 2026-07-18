@@ -1,11 +1,13 @@
 import { prisma } from "./prisma";
 import { dateOnlyInSantiago, startOfMonthInSantiago, nextMonthStartInSantiago } from "./dates";
-import type { NailTransactionType } from "./generated/prisma/enums";
+import type { NailTransactionType, NailServiceType } from "./generated/prisma/enums";
+import type { Prisma } from "./generated/prisma/client";
 
 export type NewTransaction = {
   type: NailTransactionType;
   amount: number;
   description: string;
+  serviceType?: NailServiceType | null;
   clientName?: string | null;
   note?: string | null;
   date?: Date;
@@ -18,6 +20,7 @@ export async function createTransaction(input: NewTransaction) {
       type: input.type,
       amount: input.amount,
       description: input.description,
+      serviceType: input.serviceType ?? null,
       clientName: input.clientName ?? null,
       note: input.note ?? null,
       date: input.date ?? dateOnlyInSantiago(),
@@ -37,31 +40,46 @@ export function monthRange(month?: string): { start: Date; end: Date } {
   return { start, end };
 }
 
-export async function getMonthlySummary(month?: string) {
-  const { start, end } = monthRange(month);
-  const entries = await prisma.nailTransaction.findMany({
-    where: { date: { gte: start, lt: end } },
-  });
-  const incomeTotal = entries
-    .filter((e) => e.type === "INCOME")
-    .reduce((sum, e) => sum + Number(e.amount), 0);
-  const expenseTotal = entries
-    .filter((e) => e.type === "EXPENSE")
-    .reduce((sum, e) => sum + Number(e.amount), 0);
+export type TransactionFilter = {
+  start?: Date;
+  // exclusive upper bound
+  end?: Date;
+  // when set, only INCOME rows of this service type are matched (expenses excluded)
+  serviceType?: NailServiceType;
+};
+
+function buildWhere(filter: TransactionFilter): Prisma.NailTransactionWhereInput {
+  const where: Prisma.NailTransactionWhereInput = {};
+  if (filter.start || filter.end) {
+    where.date = {
+      ...(filter.start ? { gte: filter.start } : {}),
+      ...(filter.end ? { lt: filter.end } : {}),
+    };
+  }
+  if (filter.serviceType) {
+    where.type = "INCOME";
+    where.serviceType = filter.serviceType;
+  }
+  return where;
+}
+
+export async function getSummary(filter: TransactionFilter = {}) {
+  const where = buildWhere(filter);
+  const entries = await prisma.nailTransaction.findMany({ where });
+  const incomeEntries = entries.filter((e) => e.type === "INCOME");
+  const expenseEntries = entries.filter((e) => e.type === "EXPENSE");
+  const incomeTotal = incomeEntries.reduce((sum, e) => sum + Number(e.amount), 0);
+  const expenseTotal = expenseEntries.reduce((sum, e) => sum + Number(e.amount), 0);
   return {
     incomeTotal,
     expenseTotal,
     net: incomeTotal - expenseTotal,
-    incomeCount: entries.filter((e) => e.type === "INCOME").length,
-    expenseCount: entries.filter((e) => e.type === "EXPENSE").length,
-    start,
-    end,
+    incomeCount: incomeEntries.length,
+    expenseCount: expenseEntries.length,
   };
 }
 
-export async function getRecentTransactions(limit = 50) {
-  return prisma.nailTransaction.findMany({
-    orderBy: { date: "desc" },
-    take: limit,
-  });
+export async function getTransactions(filter: TransactionFilter = {}, limit = 100) {
+  const where = buildWhere(filter);
+  return prisma.nailTransaction.findMany({ where, orderBy: { date: "desc" }, take: limit });
 }

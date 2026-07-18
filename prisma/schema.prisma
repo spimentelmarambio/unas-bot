@@ -29,11 +29,24 @@ enum NailTransactionType {
   @@schema("unas_bot")
 }
 
+// The business only offers these 3 services - Claude classifies every
+// log_income message into exactly one of these (see lib/claude.ts), so
+// the dashboard can filter income by service type.
+enum NailServiceType {
+  ESMALTADO_PERMANENTE
+  GEL_X
+  KAPPING
+
+  @@schema("unas_bot")
+}
+
 model NailTransaction {
   id           String              @id @default(cuid())
   type         NailTransactionType
   amount       Decimal             @db.Decimal(14, 2)
   description  String
+  // Only set for INCOME (always null for EXPENSE) - the classified service.
+  serviceType  NailServiceType?
   // Only meaningful for INCOME (who got the service) - always null for EXPENSE.
   clientName   String?
   note         String?
@@ -43,5 +56,6 @@ model NailTransaction {
 
   @@index([date])
   @@index([type])
+  @@index([serviceType])
   @@schema("unas_bot")
 }

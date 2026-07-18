@@ -1,9 +1,20 @@
 import { z } from "zod";
 
+// The business only offers these 3 services - keep in sync with the
+// NailServiceType enum in prisma/schema.prisma.
+export const SERVICE_TYPES = ["ESMALTADO_PERMANENTE", "GEL_X", "KAPPING"] as const;
+export type ServiceType = (typeof SERVICE_TYPES)[number];
+
+export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
+  ESMALTADO_PERMANENTE: "Esmaltado Permanente",
+  GEL_X: "Gel X",
+  KAPPING: "Kapping",
+};
+
 const LogIncomeSchema = z.object({
   intent: z.literal("log_income"),
   amount: z.number(),
-  service: z.string(),
+  serviceType: z.enum(SERVICE_TYPES),
   clientName: z.string().optional(),
   // ISO date (YYYY-MM-DD), only set if the message names a specific past
   // day (e.g. "ayer", "el lunes") - omitted means "today".
