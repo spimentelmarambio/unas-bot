@@ -44,6 +44,8 @@ export type TransactionFilter = {
   start?: Date;
   // exclusive upper bound
   end?: Date;
+  // restricts to just income or just expenses; ignored if serviceType is set
+  type?: NailTransactionType;
   // when set, only INCOME rows of this service type are matched (expenses excluded)
   serviceType?: NailServiceType;
 };
@@ -59,6 +61,8 @@ function buildWhere(filter: TransactionFilter): Prisma.NailTransactionWhereInput
   if (filter.serviceType) {
     where.type = "INCOME";
     where.serviceType = filter.serviceType;
+  } else if (filter.type) {
+    where.type = filter.type;
   }
   return where;
 }

@@ -32,3 +32,18 @@ export function nextMonthStartInSantiago(when: Date = new Date()): Date {
 export function parseDateOnly(isoDate: string): Date {
   return new Date(`${isoDate}T00:00:00.000Z`);
 }
+
+// "YYYY-MM" for the current Santiago calendar month - used as the default
+// for the dashboard's month picker.
+export function santiagoMonthString(when: Date = new Date()): string {
+  const [year, month] = SANTIAGO_DATE_FORMATTER.format(when).split("-");
+  return `${year}-${month}`;
+}
+
+// Shifts a "YYYY-MM" string by `delta` months (can be negative), for the
+// dashboard's prev/next month navigation.
+export function shiftMonthString(month: string, delta: number): string {
+  const [year, monthIndex] = month.split("-").map(Number);
+  const d = new Date(Date.UTC(year, monthIndex - 1 + delta, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
