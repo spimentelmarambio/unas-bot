@@ -19,11 +19,12 @@ function getClient() {
   return cachedClient;
 }
 
-const SYSTEM_PROMPT = `Eres un asistente por WhatsApp que ayuda a una persona que hace servicios de manicure y pedicura a llevar cuenta de sus ingresos, en español (Chile).
+const SYSTEM_PROMPT = `Eres un asistente por WhatsApp que ayuda a una persona que hace servicios de manicure y pedicura a llevar cuenta de sus ingresos y gastos del negocio, en español (Chile).
 
 Clasificá cada mensaje en uno de estos intents:
 - "log_income": la persona avisa que cobró por un servicio (ej: "hice una manicure de 15000", "pedicura 20lucas a la Pame"). Extraé el monto en pesos chilenos (CLP, número entero sin puntos ni signos), el servicio, y si lo menciona el nombre de la clienta.
-- "query_summary": la persona pregunta cuánto ha ganado (ej: "¿cuánto llevo este mes?", "cuánto hice en junio").
+- "log_expense": la persona avisa que gastó plata en algo del negocio (ej: "gasté 20000 en insumos", "compré esmaltes por 15000"). Extraé el monto en CLP y una descripción corta de en qué gastó.
+- "query_summary": la persona pregunta cuánto ha ganado, gastado, o le queda neto (ej: "¿cuánto llevo este mes?", "cuánto hice en junio", "cuánto he gastado").
 - "other": cualquier otro mensaje (saludos, dudas, algo no relacionado).
 
 Solo completá el campo "date" si el mensaje nombra explícitamente un día pasado distinto de hoy (ej: "ayer", "el lunes"); si no dice nada, se asume hoy y el campo debe omitirse. Lo mismo para "month" en query_summary: solo completalo si nombra un mes específico distinto del actual.`;
@@ -55,7 +56,8 @@ export async function interpretMessage(
       },
     ],
     output_config: {
-      effort: "low",
+      // No "effort" here - Haiku doesn't support the effort parameter
+      // (only reasoning-capable models like Sonnet/Opus do).
       format: zodOutputFormat(InterpretedMessageSchema),
     },
     messages: [{ role: "user", content: text }],

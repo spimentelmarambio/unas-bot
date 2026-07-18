@@ -1,6 +1,6 @@
 # Uñas Bot
 
-Bot de WhatsApp para que alguien que hace servicios de manicure/pedicura pueda avisar por WhatsApp cuánto cobró por cada servicio, y preguntar cuánto lleva ganado en el mes — sin usar ninguna app nueva.
+Bot de WhatsApp para que alguien que hace servicios de manicure/pedicura pueda avisar por WhatsApp cuánto cobró por cada servicio o cuánto gastó en insumos, y preguntar cuánto lleva ganado/gastado/neto en el mes — sin usar ninguna app nueva. Incluye un dashboard web (`/dashboard`, protegido con contraseña) para ver el historial.
 
 Es un proyecto separado del tracker de gastos personal "Lukas", pero reutiliza la misma base de datos Neon Postgres para no pagar/crear otra. Vive en su propio schema de Postgres (`unas_bot`, separado del `public` que usa Lukas) - **importante**: la URL de conexión tiene que llevar `?schema=unas_bot` (ver `.env.example`), o Prisma va a intentar administrar el schema `public` completo de Lukas y puede ofrecer borrar sus tablas al detectar que no las declara este proyecto.
 
@@ -9,9 +9,10 @@ Es un proyecto separado del tracker de gastos personal "Lukas", pero reutiliza l
 1. La persona le escribe al número de WhatsApp del bot, ej: `"hice una manicure de 15000"` o `"¿cuánto llevo este mes?"`.
 2. Meta reenvía el mensaje al webhook (`app/api/webhook/whatsapp/route.ts`), que:
    - Verifica la firma del webhook y que el número esté en la allowlist.
-   - Le pasa el texto a Claude (`lib/claude.ts`), que devuelve un intent estructurado: registrar un ingreso, consultar el resumen del mes, u otro.
-   - Ejecuta la acción correspondiente contra la base de datos (`lib/income.ts`).
+   - Le pasa el texto a Claude (`lib/claude.ts`), que devuelve un intent estructurado: registrar un ingreso, registrar un gasto, consultar el resumen del mes, u otro.
+   - Ejecuta la acción correspondiente contra la base de datos (`lib/transactions.ts`).
    - Responde por WhatsApp (`lib/whatsapp.ts`).
+3. `/dashboard` muestra el resumen del mes (ingresos, gastos, neto) y el historial de movimientos - protegido con HTTP Basic Auth (`proxy.ts` + `DASHBOARD_PASSWORD`).
 
 ## Setup
 

@@ -3,28 +3,45 @@ generator client {
   output   = "../lib/generated/prisma"
 }
 
-// The connection string carries `?schema=unas_bot` (see .env / .env.example),
-// which makes Postgres's search_path resolve to that schema by default for
-// this connection - so this project (including Prisma's own internal
-// _prisma_migrations bookkeeping table) only ever creates/reads/writes
-// inside "unas_bot", never "public" (Lukas's schema). Do NOT switch this to
-// the `schemas = [...]` + `@@schema(...)` multi-schema feature instead: that
-// only scopes the *models*, not Prisma's internal migrations table, which
-// still resolves through the connection's default search_path ("public")
-// and would then collide with Lukas's own migration history.
+// Two layers of isolation from Lukas's "public" schema, both needed:
+// 1. The connection string carries `?schema=unas_bot`, which the migrate
+//    CLI (native engine) uses to resolve its own `_prisma_migrations`
+//    bookkeeping table into "unas_bot" instead of colliding with Lukas's
+//    migration history in "public".
+// 2. `schemas = ["unas_bot"]` + `@@schema("unas_bot")` on every model below,
+//    which makes Prisma Client always emit schema-qualified SQL
+//    (`"unas_bot"."NailTransaction"`) regardless of the connection's
+//    default search_path. This part is required for the *running app*:
+//    the Neon driver adapter (@prisma/adapter-neon, used in lib/prisma.ts)
+//    does NOT honor the `?schema=` query param at runtime - without
+//    `@@schema()`, the app queries "public" and fails with "table does not
+//    exist" even though migrations correctly created the table in
+//    "unas_bot".
 datasource db {
   provider = "postgresql"
+  schemas  = ["unas_bot"]
 }
 
-model NailIncomeEntry {
-  id           String   @id @default(cuid())
-  amount       Decimal  @db.Decimal(14, 2)
-  service      String
+enum NailTransactionType {
+  INCOME
+  EXPENSE
+
+  @@schema("unas_bot")
+}
+
+model NailTransaction {
+  id           String              @id @default(cuid())
+  type         NailTransactionType
+  amount       Decimal             @db.Decimal(14, 2)
+  description  String
+  // Only meaningful for INCOME (who got the service) - always null for EXPENSE.
   clientName   String?
   note         String?
-  date         DateTime @default(now())
+  date         DateTime            @default(now())
   whatsappFrom String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime            @default(now())
 
   @@index([date])
+  @@index([type])
+  @@schema("unas_bot")
 }

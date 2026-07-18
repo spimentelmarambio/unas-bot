@@ -11,6 +11,14 @@ const LogIncomeSchema = z.object({
   note: z.string().optional(),
 });
 
+const LogExpenseSchema = z.object({
+  intent: z.literal("log_expense"),
+  amount: z.number(),
+  description: z.string(),
+  date: z.string().optional(),
+  note: z.string().optional(),
+});
+
 const QuerySummarySchema = z.object({
   intent: z.literal("query_summary"),
   // "YYYY-MM", only set if the message names a specific past month -
@@ -24,6 +32,7 @@ const OtherSchema = z.object({
 
 export const InterpretedMessageSchema = z.discriminatedUnion("intent", [
   LogIncomeSchema,
+  LogExpenseSchema,
   QuerySummarySchema,
   OtherSchema,
 ]);
