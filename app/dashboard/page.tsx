@@ -2,6 +2,8 @@ import { getSummary, getTransactions, monthRange } from "@/lib/transactions";
 import { santiagoMonthString, shiftMonthString } from "@/lib/dates";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
 import type { NailTransactionType } from "@/lib/generated/prisma/enums";
+import { deleteTransactionAction } from "./actions";
+import { DeleteButton } from "./DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -170,6 +172,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               <th>Fecha</th>
               <th>Descripción</th>
               <th style={{ textAlign: "right" }}>Monto</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -190,11 +193,14 @@ export default async function DashboardPage({ searchParams }: Props) {
                   {t.type === "INCOME" ? "+" : "-"}
                   {formatCLP(Number(t.amount))}
                 </td>
+                <td style={{ textAlign: "right" }}>
+                  <DeleteButton id={t.id} action={deleteTransactionAction} />
+                </td>
               </tr>
             ))}
             {transactions.length === 0 && (
               <tr>
-                <td colSpan={3} style={{ color: "var(--muted)" }}>
+                <td colSpan={4} style={{ color: "var(--muted)" }}>
                   No hay movimientos para este filtro.
                 </td>
               </tr>

@@ -87,3 +87,7 @@ export async function getTransactions(filter: TransactionFilter = {}, limit = 10
   const where = buildWhere(filter);
   return prisma.nailTransaction.findMany({ where, orderBy: { date: "desc" }, take: limit });
 }
+
+export async function deleteTransaction(id: string) {
+  await prisma.nailTransaction.delete({ where: { id } });
+}
