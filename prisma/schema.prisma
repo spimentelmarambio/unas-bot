@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Un registro por servicio de uñas cobrado. Vive en la misma base Neon que
+// Lukas, pero en su propia tabla — este schema no declara ni toca ninguna
+// tabla de Lukas.
+model NailIncomeEntry {
+  id           String   @id @default(cuid())
+  amount       Decimal  @db.Decimal(14, 2)
+  service      String
+  clientName   String?
+  note         String?
+  date         DateTime @default(now())
+  whatsappFrom String
+  createdAt    DateTime @default(now())
+
+  @@index([date])
+}
