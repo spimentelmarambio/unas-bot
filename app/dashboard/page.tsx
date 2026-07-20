@@ -1,4 +1,5 @@
 import { getSummary, getTransactions, monthRange } from "@/lib/transactions";
+import { getAppointmentStats } from "@/lib/calendar";
 import { santiagoMonthString, shiftMonthString } from "@/lib/dates";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
 import type { NailTransactionType } from "@/lib/generated/prisma/enums";
@@ -51,9 +52,10 @@ export default async function DashboardPage({ searchParams }: Props) {
   const serviceType = type !== "EXPENSE" && isServiceType(params.service) ? params.service : undefined;
   const hasActiveFilters = Boolean(type || serviceType);
 
-  const [summary, transactions] = await Promise.all([
+  const [summary, transactions, appointmentStats] = await Promise.all([
     getSummary({ ...range, type, serviceType }),
     getTransactions({ ...range, type, serviceType }, 200),
+    getAppointmentStats(month),
   ]);
 
   const effectiveType = serviceType ? "INCOME" : type;
@@ -140,6 +142,40 @@ export default async function DashboardPage({ searchParams }: Props) {
           </a>
         )}
       </form>
+
+      {appointmentStats && (
+        <>
+          <h2 style={{ fontSize: "1.1rem", margin: "0 0 0.75rem", color: "var(--text)" }}>
+            Citas (Bookly)
+          </h2>
+          <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", marginBottom: "2rem" }}>
+            <div className="card" style={cardStyle}>
+              <div style={cardLabelStyle}>Citas este mes</div>
+              <div style={cardValueStyle}>{appointmentStats.countThisMonth}</div>
+            </div>
+            <div className="card" style={cardStyle}>
+              <div style={cardLabelStyle}>Promedio citas/mes</div>
+              <div style={cardValueStyle}>{appointmentStats.averagePerMonth}</div>
+              <div style={cardSubStyle}>histórico, {appointmentStats.monthsWithData} meses</div>
+            </div>
+            {effectiveType !== "EXPENSE" && (
+              <div className="card" style={cardStyle}>
+                <div style={cardLabelStyle}>Citas vs. ingresos registrados</div>
+                <div style={cardValueStyle}>
+                  {appointmentStats.countThisMonth} / {summary.incomeCount}
+                </div>
+                <div style={cardSubStyle}>
+                  {appointmentStats.countThisMonth === summary.incomeCount
+                    ? "Coinciden"
+                    : appointmentStats.countThisMonth > summary.incomeCount
+                      ? `Faltarían ${appointmentStats.countThisMonth - summary.incomeCount} por registrar`
+                      : `${summary.incomeCount - appointmentStats.countThisMonth} más de las agendadas`}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", marginBottom: "2rem" }}>
         {showIncomeCard && (

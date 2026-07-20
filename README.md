@@ -12,7 +12,8 @@ Es un proyecto separado del tracker de gastos personal "Lukas", pero reutiliza l
    - Le pasa el texto a Claude (`lib/claude.ts`), que devuelve un intent estructurado: registrar un ingreso, registrar un gasto, consultar el resumen del mes, u otro.
    - Ejecuta la acción correspondiente contra la base de datos (`lib/transactions.ts`).
    - Responde por WhatsApp (`lib/whatsapp.ts`).
-3. `/dashboard` muestra el resumen del mes (ingresos, gastos, neto) y el historial de movimientos - protegido con HTTP Basic Auth (`proxy.ts` + `DASHBOARD_PASSWORD`).
+3. `/dashboard` muestra el resumen del mes (ingresos, gastos, neto) y el historial de movimientos - protegido con HTTP Basic Auth (`proxy.ts` + `DASHBOARD_USERNAME`/`DASHBOARD_PASSWORD`).
+4. (Opcional) Si está configurada `BOOKLY_CALENDAR_ICS_URL`, el dashboard también muestra cuántas citas se agendaron en Bookly ese mes, el promedio histórico, y los compara contra los ingresos registrados por WhatsApp (`lib/calendar.ts`, vía la librería `node-ical`) - útil para detectar servicios hechos que no se anotaron.
 
 ## Setup
 
@@ -54,6 +55,10 @@ Copiá `.env.example` a `.env` y completá:
 Local: exponé `localhost:3000` con `ngrok http 3000` y usá esa URL temporalmente en el webhook de Meta mientras probás.
 
 Escribile al número de prueba: `"hice una manicure de 15000"` y confirmá que responde y que se creó el registro (`npx prisma studio`). Después probá `"¿cuánto llevo este mes?"`.
+
+### 5. (Opcional) Conectar las citas de Bookly
+
+Para que el dashboard compare las citas agendadas contra los ingresos registrados, necesitás un feed de solo lectura en formato iCalendar. Bookly tiene uno nativo: en el panel de WordPress, **Staff Members → editar a la persona → pestaña "Avanzado" → "Fuente de ICalendar"** → activarla y copiar la URL (incluye un token secreto, no la compartas). Pegala en `BOOKLY_CALENDAR_ICS_URL`. Si no la configurás, el dashboard funciona igual, solo sin esa sección.
 
 ## Desarrollo
 
