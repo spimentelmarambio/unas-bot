@@ -237,8 +237,16 @@ export default async function DashboardPage({ searchParams }: Props) {
       {section === "transacciones" && (
         <>
           <form method="get" className="card" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
-            <input type="hidden" name="month" value={month} />
             <input type="hidden" name="section" value="transacciones" />
+            <label style={labelStyle}>
+              Mes
+              <select name="month" defaultValue={month} className="input">
+                {[-11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0].map((offset) => {
+                  const m = shiftMonthString(month, offset);
+                  return <option key={m} value={m}>{monthLabel(m)}</option>;
+                })}
+              </select>
+            </label>
             <label style={labelStyle}>
               Tipo
               <select name="type" defaultValue={params.type ?? "ALL"} className="input">
@@ -256,8 +264,8 @@ export default async function DashboardPage({ searchParams }: Props) {
                 ))}
               </select>
             </label>
-            <button type="submit" className="btn" style={{ padding: "0.5rem 1rem" }}>Filtrar</button>
-            {hasActiveFilters && <a href={`/dashboard?month=${month}&section=transacciones`} style={{ fontSize: "0.85rem" }}>Limpiar</a>}
+            <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
+            {hasActiveFilters && <a href={`/dashboard?section=transacciones`} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
           <h2 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)" }}>Transacciones</h2>
@@ -296,7 +304,31 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* CITAS SECTION */}
       {section === "citas" && (
         <>
-          <h2 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h2>
+          <form method="get" className="card" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
+            <input type="hidden" name="section" value="citas" />
+            <label style={labelStyle}>
+              Mes
+              <select name="month" defaultValue={month} className="input">
+                {[-11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0].map((offset) => {
+                  const m = shiftMonthString(month, offset);
+                  return <option key={m} value={m}>{monthLabel(m)}</option>;
+                })}
+              </select>
+            </label>
+            <label style={labelStyle}>
+              Servicio
+              <select name="service" defaultValue={params.service ?? "ALL"} className="input">
+                <option value="ALL">Todos</option>
+                {SERVICE_TYPES.map((s) => (
+                  <option key={s} value={s}>{SERVICE_TYPE_LABELS[s]}</option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
+            <a href={`/dashboard?section=citas`} style={{ fontSize: "0.75rem" }}>Limpiar</a>
+          </form>
+
+          <h2 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h2>
           <div className="card" style={{ overflowX: "auto" }}>
             <table className="pretty">
               <thead>
@@ -307,16 +339,21 @@ export default async function DashboardPage({ searchParams }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {appointmentsThisMonth.sort((a, b) => b.start.getTime() - a.start.getTime()).map((apt) => (
-                  <tr key={apt.start.toISOString()}>
-                    <td>{formatDate(apt.start)}</td>
-                    <td>{formatTime(apt.start)}</td>
-                    <td style={{ fontSize: "0.9rem" }}>{apt.title || "Sin nombre"}</td>
-                  </tr>
-                ))}
-                {appointmentsThisMonth.length === 0 && (
+                {appointmentsThisMonth
+                  .filter((apt) => !params.service || apt.title.toLowerCase().includes(SERVICE_TYPE_LABELS[params.service as ServiceType]?.toLowerCase() || ""))
+                  .sort((a, b) => b.start.getTime() - a.start.getTime())
+                  .map((apt) => (
+                    <tr key={apt.start.toISOString()}>
+                      <td>{formatDate(apt.start)}</td>
+                      <td>{formatTime(apt.start)}</td>
+                      <td style={{ fontSize: "0.85rem" }}>{apt.title || "Sin nombre"}</td>
+                    </tr>
+                  ))}
+                {appointmentsThisMonth
+                  .filter((apt) => !params.service || apt.title.toLowerCase().includes(SERVICE_TYPE_LABELS[params.service as ServiceType]?.toLowerCase() || ""))
+                  .length === 0 && (
                   <tr>
-                    <td colSpan={3} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>No hay citas este mes</td>
+                    <td colSpan={3} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>No hay citas</td>
                   </tr>
                 )}
               </tbody>
