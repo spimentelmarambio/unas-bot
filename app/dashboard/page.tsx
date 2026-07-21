@@ -177,22 +177,16 @@ export default async function DashboardPage({ searchParams }: Props) {
         💅 MartiNails
       </h1>
 
-      {/* Month & Filter Controls */}
-      <div className="card" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", padding: "0.75rem 1rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
-        <a href={monthHref(shiftMonthString(month, -1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem" }}>
-          ←
-        </a>
-        <strong style={{ minWidth: 140, textAlign: "center", fontSize: "0.95rem" }}>{monthLabel(month)}</strong>
-        <a href={monthHref(shiftMonthString(month, 1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem" }}>
-          →
-        </a>
-      </div>
-
       {/* RESUMEN SECTION */}
       {section === "resumen" && (
         <>
           <form method="get" className="card" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
             <input type="hidden" name="section" value="resumen" />
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <a href={monthHref(shiftMonthString(month, -1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
+              <span style={{ minWidth: "100px", textAlign: "center", fontWeight: 600, fontSize: "0.9rem" }}>{monthLabel(month)}</span>
+              <a href={monthHref(shiftMonthString(month, 1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
+            </div>
             <label style={labelStyle}>
               Tipo
               <select name="type" defaultValue={params.type ?? "ALL"} className="input">
