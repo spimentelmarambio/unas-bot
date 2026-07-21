@@ -41,7 +41,7 @@ export async function askDashboardQuestion(question: string, month: string): Pro
     console.log("[Chat Action] Resultado obtenido");
     return result;
   } catch (error) {
-    console.error("[Chat Action] Error:", error);
-    throw error;
+    console.error("[Chat Action] Error capturado:", error instanceof Error ? error.message : String(error));
+    return `Error: No pude procesar tu pregunta. ${error instanceof Error ? error.message : "Intenta de nuevo."}`;
   }
 }
