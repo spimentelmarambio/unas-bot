@@ -103,7 +103,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         flexShrink: 0,
         display: "flex",
         flexDirection: "column",
-      }} className="sidebar">
+      }} className="sidebar dashboard-sidebar">
         <div style={{ marginBottom: "1.5rem", paddingLeft: "0.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", margin: "0", color: "var(--text)", fontWeight: 600 }}>💅 MartiNails</h2>
         </div>
@@ -168,7 +168,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: "2rem 2.5rem", maxWidth: "100%", width: "100%", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      <main className="dashboard-main" style={{ flex: 1, padding: "2rem 2.5rem", maxWidth: "100%", width: "100%", overflowY: "auto", display: "flex", flexDirection: "column" }}>
       <div style={{ maxWidth: "1600px", margin: "0 auto", width: "100%", flex: 1 }}>
 
       {/* RESUMEN SECTION */}
