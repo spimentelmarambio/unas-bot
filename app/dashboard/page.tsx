@@ -5,6 +5,8 @@ import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/sche
 import type { NailTransactionType } from "@/lib/generated/prisma/enums";
 import { deleteTransactionAction } from "./actions";
 import { DeleteButton } from "./DeleteButton";
+import { MonthlyBarChart } from "./MonthlyBarChart";
+import { ChatPanel } from "./ChatPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -195,7 +197,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       {appointmentStats && (
         <>
           <h2 style={{ fontSize: "1.1rem", margin: "0 0 0.75rem", color: "var(--text)" }}>
-            Citas (Bookly)
+            📊 Citas (Bookly)
           </h2>
           <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", marginBottom: "2rem" }}>
             <div className="card" style={cardStyle}>
@@ -207,9 +209,45 @@ export default async function DashboardPage({ searchParams }: Props) {
               <div style={cardValueStyle}>{appointmentStats.averagePerMonth}</div>
               <div style={cardSubStyle}>histórico, {appointmentStats.monthsWithData} meses</div>
             </div>
+            <div className="card" style={cardStyle}>
+              <div style={cardLabelStyle}>Promedio/semana</div>
+              <div style={cardValueStyle}>{appointmentStats.averagePerWeek}</div>
+              <div style={cardSubStyle}>mes actual</div>
+            </div>
+            <div className="card" style={cardStyle}>
+              <div style={cardLabelStyle}>Total histórico</div>
+              <div style={cardValueStyle}>{appointmentStats.totalAppointments}</div>
+              <div style={cardSubStyle}>todas las citas</div>
+            </div>
+            {appointmentStats.busiestMonth && (
+              <div className="card" style={cardStyle}>
+                <div style={cardLabelStyle}>Mes más movido</div>
+                <div style={cardValueStyle}>{appointmentStats.busiestMonth.month}</div>
+                <div style={cardSubStyle}>{appointmentStats.busiestMonth.count} citas</div>
+              </div>
+            )}
+            {appointmentStats.changeVsPreviousMonth !== null && (
+              <div className="card" style={cardStyle}>
+                <div style={cardLabelStyle}>Vs. mes anterior</div>
+                <div
+                  style={{
+                    ...cardValueStyle,
+                    color:
+                      appointmentStats.changeVsPreviousMonth > 0
+                        ? "var(--income)"
+                        : appointmentStats.changeVsPreviousMonth < 0
+                          ? "var(--expense)"
+                          : "var(--text)",
+                  }}
+                >
+                  {appointmentStats.changeVsPreviousMonth > 0 ? "+" : ""}
+                  {appointmentStats.changeVsPreviousMonth}%
+                </div>
+              </div>
+            )}
             {effectiveType !== "EXPENSE" && (
               <div className="card" style={cardStyle}>
-                <div style={cardLabelStyle}>Citas vs. ingresos registrados</div>
+                <div style={cardLabelStyle}>Citas vs. ingresos</div>
                 <div style={cardValueStyle}>
                   {appointmentStats.countThisMonth} / {summary.incomeCount}
                 </div>
@@ -217,12 +255,39 @@ export default async function DashboardPage({ searchParams }: Props) {
                   {appointmentStats.countThisMonth === summary.incomeCount
                     ? "Coinciden"
                     : appointmentStats.countThisMonth > summary.incomeCount
-                      ? `Faltarían ${appointmentStats.countThisMonth - summary.incomeCount} por registrar`
-                      : `${summary.incomeCount - appointmentStats.countThisMonth} más de las agendadas`}
+                      ? `${appointmentStats.countThisMonth - summary.incomeCount} por registrar`
+                      : `${summary.incomeCount - appointmentStats.countThisMonth} extra`}
                 </div>
               </div>
             )}
           </div>
+
+          {appointmentStats.monthlySeries.length > 0 && (
+            <>
+              <h3 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>
+                📈 Evolución mensual
+              </h3>
+              <div className="card" style={{ padding: "1.5rem", marginBottom: "2rem" }}>
+                <MonthlyBarChart series={appointmentStats.monthlySeries} currentMonth={month} />
+              </div>
+            </>
+          )}
+
+          {appointmentStats.serviceBreakdown.length > 0 && (
+            <>
+              <h3 style={{ fontSize: "1rem", margin: "0 0 0.75rem", color: "var(--text)" }}>
+                💅 Servicios este mes
+              </h3>
+              <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", marginBottom: "2rem" }}>
+                {appointmentStats.serviceBreakdown.map((service) => (
+                  <div key={service.label} className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>{service.label}</div>
+                    <div style={cardValueStyle}>{service.count}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
 
@@ -293,6 +358,8 @@ export default async function DashboardPage({ searchParams }: Props) {
           </tbody>
         </table>
       </div>
+
+      <ChatPanel month={month} />
       </main>
     </div>
   );
