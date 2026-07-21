@@ -89,7 +89,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column", "@media(min-width: 768px)": { flexDirection: "row" } }}>
+    <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column" }}>
       {/* Sidebar - responsive */}
       <aside style={{
         width: "100%",
@@ -98,20 +98,9 @@ export default async function DashboardPage({ searchParams }: Props) {
         backgroundColor: "var(--card)",
         borderBottom: "1px solid var(--border)",
         borderRight: "none",
-        "@media(min-width: 768px)": {
-          width: 180,
-          maxWidth: 180,
-          padding: "1.5rem 1rem",
-          borderBottom: "none",
-          borderRight: "1px solid var(--border)",
-          position: "sticky",
-          top: 0,
-          height: "100vh",
-          overflowY: "auto",
-        }
       }}>
         <h2 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--accent-dark)" }}>💅 MartiNails</h2>
-        <nav style={{ display: "flex", flexDirection: "row", gap: "0.5rem", overflowX: "auto", "@media(min-width: 768px)": { flexDirection: "column" } }}>
+        <nav style={{ display: "flex", flexDirection: "row", gap: "0.5rem", overflowX: "auto" }}>
           {[
             { id: "resumen", label: "📊 Resumen" },
             { id: "transacciones", label: "💰 Transacciones" },
