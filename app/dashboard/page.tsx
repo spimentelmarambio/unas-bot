@@ -319,15 +319,14 @@ export default async function DashboardPage({ searchParams }: Props) {
                   type="text"
                   className="input"
                   placeholder="Buscar transacciones..."
-                  style={{ paddingLeft: "2.2rem", width: "100%" }}
+                  style={{ paddingLeft: "2.2rem", width: "100%", opacity: 0.6, cursor: "not-allowed" }}
+                  disabled
+                  title="Búsqueda disponible próximamente"
                 />
                 <span style={{ position: "absolute", left: "0.7rem", top: "50%", transform: "translateY(-50%)" }}>🔍</span>
               </div>
-              <select className="input" style={{ minWidth: "120px" }}>
-                <option>Todas</option>
-              </select>
             </div>
-            <button className="btn" style={{ padding: "0.6rem 1.2rem", backgroundColor: "#2f9e63", fontWeight: 600 }}>+ Nueva transacción</button>
+            <button className="btn" style={{ padding: "0.6rem 1.2rem", backgroundColor: "#2f9e63", fontWeight: 600, opacity: 0.6, cursor: "not-allowed" }} disabled title="Disponible próximamente">+ Nueva transacción</button>
           </div>
 
           <form method="get" className="card" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
@@ -408,7 +407,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               </select>
             </label>
             <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
-            <a href={`/dashboard?section=citas`} style={{ fontSize: "0.75rem" }}>Limpiar</a>
+            {params.service && params.service !== "ALL" && <a href={`/dashboard?section=citas`} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
           <h2 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h2>
@@ -422,23 +421,24 @@ export default async function DashboardPage({ searchParams }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {appointmentsThisMonth
-                  .filter((apt) => !params.service || apt.title.toLowerCase().includes(SERVICE_TYPE_LABELS[params.service as ServiceType]?.toLowerCase() || ""))
-                  .sort((a, b) => b.start.getTime() - a.start.getTime())
-                  .map((apt) => (
-                    <tr key={apt.start.toISOString()}>
-                      <td>{formatDate(apt.start)}</td>
-                      <td>{formatTime(apt.start)}</td>
-                      <td style={{ fontSize: "0.85rem" }}>{apt.title || "Sin nombre"}</td>
+                {(() => {
+                  const filtered = appointmentsThisMonth
+                    .filter((apt) => !params.service || apt.title.toLowerCase().includes(SERVICE_TYPE_LABELS[params.service as ServiceType]?.toLowerCase() || ""))
+                    .sort((a, b) => b.start.getTime() - a.start.getTime());
+                  return filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>No hay citas</td>
                     </tr>
-                  ))}
-                {appointmentsThisMonth
-                  .filter((apt) => !params.service || apt.title.toLowerCase().includes(SERVICE_TYPE_LABELS[params.service as ServiceType]?.toLowerCase() || ""))
-                  .length === 0 && (
-                  <tr>
-                    <td colSpan={3} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>No hay citas</td>
-                  </tr>
-                )}
+                  ) : (
+                    filtered.map((apt, idx) => (
+                      <tr key={`${apt.start.getTime()}-${idx}`}>
+                        <td>{formatDate(apt.start)}</td>
+                        <td>{formatTime(apt.start)}</td>
+                        <td style={{ fontSize: "0.85rem" }}>{apt.title || "Sin nombre"}</td>
+                      </tr>
+                    ))
+                  );
+                })()}
               </tbody>
             </table>
           </div>
