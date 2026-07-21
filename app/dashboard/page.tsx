@@ -180,11 +180,11 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* RESUMEN SECTION */}
       {section === "resumen" && (
         <>
-          <form method="get" className="card" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
+          <form method="get" className="card" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "2rem", padding: "1.2rem 1.5rem" }}>
             <input type="hidden" name="section" value="resumen" />
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <a href={monthHref(shiftMonthString(month, -1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
-              <span style={{ minWidth: "100px", textAlign: "center", fontWeight: 600, fontSize: "0.9rem" }}>{monthLabel(month)}</span>
+              <span style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
               <a href={monthHref(shiftMonthString(month, 1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
             </div>
             <label style={labelStyle}>
@@ -210,8 +210,8 @@ export default async function DashboardPage({ searchParams }: Props) {
 
           {appointmentStats && (
             <>
-              <h2 style={{ fontSize: "1.1rem", margin: "0 0 0.75rem", color: "var(--text)" }}>📊 Indicadores de Citas</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
+              <h2 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)", textAlign: "center" }}>📊 Indicadores de Citas</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem", marginBottom: "2rem", maxWidth: "900px", margin: "0 auto 2rem" }}>
                 <div className="card" style={cardStyle}>
                   <div style={cardLabelStyle}>Este mes</div>
                   <div style={cardValueStyle}>{appointmentStats.countThisMonth}</div>
