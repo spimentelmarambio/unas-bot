@@ -101,33 +101,73 @@ export default async function DashboardPage({ searchParams }: Props) {
         height: "100vh",
         overflowY: "auto",
         flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
       }}>
-        <h2 style={{ fontSize: "0.95rem", margin: "0 0 1.5rem", color: "var(--accent-dark)", fontWeight: 600 }}>💅 MartiNails</h2>
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <div style={{ marginBottom: "2rem" }}>
+          <h2 style={{ fontSize: "1rem", margin: "0", color: "var(--accent-dark)", fontWeight: 700 }}>💅 MartiNails</h2>
+        </div>
+
+        <nav style={{ display: "flex", flexDirection: "column", gap: "0.3rem", flex: 1 }}>
           {[
-            { id: "resumen", label: "📊 Resumen" },
-            { id: "transacciones", label: "💰 Transacciones" },
-            { id: "citas", label: "📅 Citas" },
+            { id: "resumen", label: "📊 Resumen", icon: "▦" },
+            { id: "transacciones", label: "💰 Transacciones", icon: "↔" },
+            { id: "citas", label: "📅 Citas", icon: "◯" },
           ].map((item) => (
             <a
               key={item.id}
               href={sectionHref(item.id)}
               style={{
-                padding: "0.7rem 1rem",
-                borderRadius: "0.4rem",
+                padding: "0.65rem 1rem",
+                borderRadius: "0.5rem",
                 backgroundColor: section === item.id ? "var(--pink-bg)" : "transparent",
                 color: section === item.id ? "var(--accent-dark)" : "var(--text)",
                 fontWeight: section === item.id ? 600 : 500,
                 fontSize: "0.85rem",
                 textDecoration: "none",
-                display: "block",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
                 transition: "all 0.2s",
               }}
             >
+              <span style={{ fontSize: "0.7rem" }}>{item.icon}</span>
               {item.label}
             </a>
           ))}
         </nav>
+
+        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem", marginTop: "1rem" }}>
+          <nav style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+            {[
+              { id: "chat", label: "Chat IA", icon: "💬" },
+              { id: "tools", label: "Herramientas", icon: "🔧" },
+              { id: "settings", label: "Ajustes", icon: "⚙️" },
+            ].map((item) => (
+              <a
+                key={item.id}
+                href="#"
+                style={{
+                  padding: "0.65rem 1rem",
+                  borderRadius: "0.5rem",
+                  backgroundColor: "transparent",
+                  color: "var(--text)",
+                  fontWeight: 500,
+                  fontSize: "0.85rem",
+                  textDecoration: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  transition: "all 0.2s",
+                  opacity: 0.6,
+                }}
+              >
+                <span style={{ fontSize: "0.9rem" }}>{item.icon}</span>
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -238,17 +278,38 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* TRANSACCIONES SECTION */}
       {section === "transacciones" && (
         <>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+            <h2 style={{ fontSize: "1.6rem", margin: "0", color: "var(--text)", fontWeight: 700 }}>Transacciones</h2>
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <button className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)" }}>← Anterior</button>
+                <span style={{ minWidth: "120px", textAlign: "center", fontWeight: 600 }}>{monthLabel(month)}</span>
+                <button className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)" }}>Siguiente →</button>
+              </div>
+              <a href="#" style={{ fontSize: "0.85rem", color: "var(--muted)" }}>📅 Fecha personalizada</a>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", gap: "0.8rem", flex: 1 }}>
+              <div style={{ flex: 1, position: "relative" }}>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="Buscar transacciones..."
+                  style={{ paddingLeft: "2.2rem", width: "100%" }}
+                />
+                <span style={{ position: "absolute", left: "0.7rem", top: "50%", transform: "translateY(-50%)" }}>🔍</span>
+              </div>
+              <select className="input" style={{ minWidth: "120px" }}>
+                <option>Todas</option>
+              </select>
+            </div>
+            <button className="btn" style={{ padding: "0.6rem 1.2rem", backgroundColor: "#2f9e63", fontWeight: 600 }}>+ Nueva transacción</button>
+          </div>
+
           <form method="get" className="card" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
             <input type="hidden" name="section" value="transacciones" />
-            <label style={labelStyle}>
-              Mes
-              <select name="month" defaultValue={month} className="input">
-                {[-11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0].map((offset) => {
-                  const m = shiftMonthString(month, offset);
-                  return <option key={m} value={m}>{monthLabel(m)}</option>;
-                })}
-              </select>
-            </label>
             <label style={labelStyle}>
               Tipo
               <select name="type" defaultValue={params.type ?? "ALL"} className="input">
@@ -269,8 +330,6 @@ export default async function DashboardPage({ searchParams }: Props) {
             <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
             {hasActiveFilters && <a href={`/dashboard?section=transacciones`} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
-
-          <h2 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)" }}>Transacciones</h2>
           <div className="card" style={{ overflowX: "auto" }}>
             <table className="pretty">
               <thead>
