@@ -15,9 +15,14 @@ export function ChatPanel({ month }: Props) {
   const handleAsk = () => {
     if (!question.trim()) return;
     startTransition(async () => {
-      const response = await askDashboardQuestion(question, month);
-      setAnswer(response);
-      setQuestion("");
+      try {
+        const response = await askDashboardQuestion(question, month);
+        setAnswer(response);
+        setQuestion("");
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        setAnswer(`Error: ${errorMsg}`);
+      }
     });
   };
 
