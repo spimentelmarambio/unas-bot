@@ -24,13 +24,13 @@ function barPath(x: number, y: number, width: number, height: number, radius: nu
 export function MonthlyBarChart({ series, currentMonth }: Props) {
   if (series.length === 0) return null;
 
-  const barWidth = 18;
-  const gap = 8;
-  const plotHeight = 100;
-  const topSpace = 20;
-  const bottomSpace = 28;
-  const leftPad = 8;
-  const width = leftPad * 2 + series.length * (barWidth + gap) - gap;
+  const barWidth = 32;
+  const gap = 12;
+  const plotHeight = 250;
+  const topSpace = 30;
+  const bottomSpace = 50;
+  const leftPad = 20;
+  const width = Math.max(900, leftPad * 2 + series.length * (barWidth + gap) - gap);
   const height = topSpace + plotHeight + bottomSpace;
   const maxCount = Math.max(1, ...series.map((s) => s.count));
 
@@ -40,7 +40,7 @@ export function MonthlyBarChart({ series, currentMonth }: Props) {
     <svg
       viewBox={`0 0 ${width} ${height}`}
       width="100%"
-      style={{ display: "block", maxWidth: width, height: "auto" }}
+      style={{ display: "block", maxWidth: "100%", height: "auto", minHeight: "400px" }}
       role="img"
       aria-label="Citas por mes"
     >
