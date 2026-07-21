@@ -1,12 +1,12 @@
 :root {
-  --pink-bg: #fdf1f6;
-  --pink-bg-2: #fbe4ee;
+  --pink-bg: #fafafa;
+  --pink-bg-2: #f5f5f5;
   --card: #ffffff;
-  --border: #f6d3e3;
+  --border: #e5e5e5;
   --accent: #d9538a;
   --accent-dark: #b8386c;
-  --text: #4a2b3a;
-  --muted: #9a7e8a;
+  --text: #2c2c2c;
+  --muted: #888888;
   --income: #2f9e63;
   --expense: #e0568a;
 }
@@ -17,53 +17,69 @@
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, var(--pink-bg) 0%, var(--pink-bg-2) 100%);
-  background-attachment: fixed;
+  background: var(--pink-bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   font-size: 14px;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
 }
 
 a {
   color: var(--accent-dark);
+  text-decoration: none;
+}
+
+a:hover {
+  opacity: 0.8;
 }
 
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(217, 83, 138, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .btn {
-  padding: 0.5rem 1.25rem;
-  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
   border: none;
   background: var(--accent);
   color: #fff;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn:hover {
   background: var(--accent-dark);
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .input {
-  padding: 0.45rem 0.7rem;
-  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
   border: 1px solid var(--border);
   font-size: 0.9rem;
   background: #fff;
   color: var(--text);
+  font-family: inherit;
+  transition: border-color 0.2s ease;
 }
 
 .input:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(217, 83, 138, 0.1);
 }
 
 table.pretty {
@@ -74,15 +90,17 @@ table.pretty {
 table.pretty th {
   text-align: left;
   font-size: 0.8rem;
+  font-weight: 600;
   color: var(--muted);
-  padding: 0.6rem 0.9rem;
-  border-bottom: 2px solid var(--border);
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--pink-bg-2);
 }
 
 table.pretty td {
-  padding: 0.6rem 0.9rem;
+  padding: 0.8rem 0.9rem;
   font-size: 0.9rem;
-  border-bottom: 1px solid var(--pink-bg-2);
+  border-bottom: 1px solid var(--border);
 }
 
 table.pretty tr:last-child td {
@@ -90,5 +108,5 @@ table.pretty tr:last-child td {
 }
 
 table.pretty tbody tr:hover {
-  background: var(--pink-bg);
+  background: var(--pink-bg-2);
 }

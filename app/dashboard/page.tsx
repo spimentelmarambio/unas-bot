@@ -89,11 +89,11 @@ export default async function DashboardPage({ searchParams }: Props) {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--pink-bg)" }}>
       {/* Sidebar - lateral */}
       <aside style={{
-        width: "200px",
-        padding: "1.5rem 1rem",
+        width: "180px",
+        padding: "1.5rem 0.8rem",
         backgroundColor: "var(--card)",
         borderRight: "1px solid var(--border)",
         position: "sticky",
@@ -104,65 +104,62 @@ export default async function DashboardPage({ searchParams }: Props) {
         display: "flex",
         flexDirection: "column",
       }}>
-        <div style={{ marginBottom: "2rem" }}>
-          <h2 style={{ fontSize: "1rem", margin: "0", color: "var(--accent-dark)", fontWeight: 700 }}>💅 MartiNails</h2>
+        <div style={{ marginBottom: "1.5rem", paddingLeft: "0.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", margin: "0", color: "var(--text)", fontWeight: 600 }}>💅 MartiNails</h2>
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.3rem", flex: 1 }}>
+        <nav style={{ display: "flex", flexDirection: "column", gap: "0.2rem", flex: 1 }}>
           {[
-            { id: "resumen", label: "📊 Resumen", icon: "▦" },
-            { id: "transacciones", label: "💰 Transacciones", icon: "↔" },
-            { id: "citas", label: "📅 Citas", icon: "◯" },
+            { id: "resumen", label: "Resumen", icon: "📊" },
+            { id: "transacciones", label: "Transacciones", icon: "💰" },
+            { id: "citas", label: "Citas", icon: "📅" },
           ].map((item) => (
             <a
               key={item.id}
               href={sectionHref(item.id)}
               style={{
-                padding: "0.65rem 1rem",
-                borderRadius: "0.5rem",
-                backgroundColor: section === item.id ? "var(--pink-bg)" : "transparent",
-                color: section === item.id ? "var(--accent-dark)" : "var(--text)",
-                fontWeight: section === item.id ? 600 : 500,
+                padding: "0.6rem 0.8rem",
+                borderRadius: "8px",
+                backgroundColor: section === item.id ? "var(--pink-bg-2)" : "transparent",
+                color: section === item.id ? "var(--accent)" : "var(--text)",
+                fontWeight: section === item.id ? 500 : 400,
                 fontSize: "0.85rem",
                 textDecoration: "none",
                 display: "flex",
                 alignItems: "center",
-                gap: "0.5rem",
+                gap: "0.6rem",
                 transition: "all 0.2s",
               }}
             >
-              <span style={{ fontSize: "0.7rem" }}>{item.icon}</span>
+              <span style={{ fontSize: "1rem" }}>{item.icon}</span>
               {item.label}
             </a>
           ))}
         </nav>
 
-        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem", marginTop: "1rem" }}>
-          <nav style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "0.8rem", marginTop: "1rem", opacity: 0.5 }}>
+          <nav style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
             {[
               { id: "chat", label: "Chat IA", icon: "💬" },
-              { id: "tools", label: "Herramientas", icon: "🔧" },
-              { id: "settings", label: "Ajustes", icon: "⚙️" },
             ].map((item) => (
               <a
                 key={item.id}
                 href="#"
                 style={{
-                  padding: "0.65rem 1rem",
-                  borderRadius: "0.5rem",
+                  padding: "0.6rem 0.8rem",
+                  borderRadius: "8px",
                   backgroundColor: "transparent",
                   color: "var(--text)",
-                  fontWeight: 500,
+                  fontWeight: 400,
                   fontSize: "0.85rem",
                   textDecoration: "none",
                   display: "flex",
                   alignItems: "center",
-                  gap: "0.5rem",
+                  gap: "0.6rem",
                   transition: "all 0.2s",
-                  opacity: 0.6,
                 }}
               >
-                <span style={{ fontSize: "0.9rem" }}>{item.icon}</span>
+                <span style={{ fontSize: "1rem" }}>{item.icon}</span>
                 {item.label}
               </a>
             ))}
@@ -171,11 +168,8 @@ export default async function DashboardPage({ searchParams }: Props) {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: "1.5rem", maxWidth: "100%", width: "100%", overflowY: "auto", display: "flex", flexDirection: "column" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto", width: "100%", flex: 1 }}>
-      <h1 style={{ fontSize: "1.4rem", margin: "0 0 1.5rem", color: "var(--accent-dark)" }}>
-        💅 MartiNails
-      </h1>
+      <main style={{ flex: 1, padding: "2rem 2.5rem", maxWidth: "100%", width: "100%", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      <div style={{ maxWidth: "1000px", margin: "0 auto", width: "100%", flex: 1 }}>
 
       {/* RESUMEN SECTION */}
       {section === "resumen" && (
