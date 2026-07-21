@@ -130,6 +130,10 @@ table.pretty tbody tr:hover {
     border-right: none !important;
     flex-direction: row !important;
     z-index: 1000 !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1) !important;
   }
 
   .dashboard-sidebar h2 {
@@ -164,7 +168,44 @@ table.pretty tbody tr:hover {
 
   .filter-form {
     flex-direction: column !important;
+    align-items: stretch !important;
     padding: 0.8rem !important;
+    gap: 0.7rem !important;
+  }
+
+  .filter-form > div {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .filter-form label {
+    width: 100% !important;
+  }
+
+  .filter-form select,
+  .filter-form .input {
+    width: 100% !important;
+  }
+
+  .filter-form button,
+  .filter-form a {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  .page-header-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.8rem !important;
+  }
+
+  .page-header-row > div {
+    justify-content: center !important;
+  }
+
+  .toolbar-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
   }
 
   .btn {

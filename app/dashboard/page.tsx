@@ -289,7 +289,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* TRANSACCIONES SECTION */}
       {section === "transacciones" && (
         <>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+          <div className="page-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
             <h2 style={{ fontSize: "1.6rem", margin: "0", color: "var(--text)", fontWeight: 700 }}>Transacciones</h2>
             <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -300,7 +300,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", alignItems: "center", justifyContent: "space-between" }}>
+          <div className="toolbar-row" style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", gap: "0.8rem", flex: 1 }}>
               <div style={{ flex: 1, position: "relative" }}>
                 <input
@@ -317,7 +317,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             <button className="btn" style={{ padding: "0.6rem 1.2rem", backgroundColor: "#2f9e63", fontWeight: 600, opacity: 0.6, cursor: "not-allowed" }} disabled title="Disponible próximamente">+ Nueva transacción</button>
           </div>
 
-          <form method="get" className="card" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
+          <form method="get" className="card filter-form" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
             <input type="hidden" name="section" value="transacciones" />
             <label style={labelStyle}>
               Tipo
@@ -374,7 +374,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* CITAS SECTION */}
       {section === "citas" && (
         <>
-          <form method="get" className="card" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
+          <form method="get" className="card filter-form" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
             <input type="hidden" name="section" value="citas" />
             <label style={labelStyle}>
               Mes
