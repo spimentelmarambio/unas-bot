@@ -1,9 +1,10 @@
 import * as ical from "node-ical";
 import { santiagoMonthString, shiftMonthString } from "./dates";
-import { SERVICE_TYPE_LABELS } from "./schemas/message";
+import { SERVICE_TYPE_LABELS, type ServiceType } from "./schemas/message";
 
 export type Appointment = {
   title: string;
+  description: string;
   start: Date;
 };
 
@@ -18,10 +19,36 @@ export async function fetchAppointments(): Promise<Appointment[]> {
   const appointments: Appointment[] = [];
   for (const entry of Object.values(data)) {
     if (entry && entry.type === "VEVENT") {
-      appointments.push({ title: String(entry.summary ?? ""), start: new Date(entry.start) });
+      appointments.push({
+        title: String(entry.summary ?? ""),
+        description: String(entry.description ?? ""),
+        start: new Date(entry.start),
+      });
     }
   }
   return appointments.sort((a, b) => a.start.getTime() - b.start.getTime());
+}
+
+// Notes/descripción a veces traen el servicio real cuando el título de la
+// cita es genérico (ej: "Otro"). Buscamos palabras clave de cada servicio
+// ahí antes de resignarnos a categorizar como "Otro".
+const SERVICE_KEYWORDS: Record<ServiceType, string[]> = {
+  ESMALTADO_PERMANENTE: ["esmaltado permanente", "esmaltado"],
+  GEL_X: ["gel x", "gel-x", "gelx"],
+  KAPPING: ["kapping", "capping"],
+};
+
+function matchServiceType(title: string, description: string): ServiceType | null {
+  const exactLabel = Object.entries(SERVICE_TYPE_LABELS).find(
+    ([, label]) => label.toLowerCase() === title.trim().toLowerCase()
+  );
+  if (exactLabel) return exactLabel[0] as ServiceType;
+
+  const haystack = `${title} ${description}`.toLowerCase();
+  for (const [type, keywords] of Object.entries(SERVICE_KEYWORDS) as [ServiceType, string[]][]) {
+    if (keywords.some((k) => haystack.includes(k))) return type;
+  }
+  return null;
 }
 
 function daysElapsedInMonth(month: string): number {
@@ -96,10 +123,8 @@ export async function getAppointmentStats(month: string): Promise<AppointmentSta
   const serviceCounts = new Map<string, number>();
   for (const a of appointments) {
     if (santiagoMonthString(a.start) !== month) continue;
-    const label = Object.values(SERVICE_TYPE_LABELS).find(
-      (l) => l.toLowerCase() === a.title.trim().toLowerCase()
-    );
-    const key = label ?? "Otro";
+    const matched = matchServiceType(a.title, a.description);
+    const key = matched ? SERVICE_TYPE_LABELS[matched] : "Otro";
     serviceCounts.set(key, (serviceCounts.get(key) ?? 0) + 1);
   }
   const serviceBreakdown = Object.values(SERVICE_TYPE_LABELS)
