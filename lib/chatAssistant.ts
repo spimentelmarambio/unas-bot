@@ -14,9 +14,14 @@ function getClient() {
   return cachedClient;
 }
 
-const SYSTEM_PROMPT = `Sos un asistente que responde preguntas sobre el negocio de manicure/pedicura MartiNails, en español (Chile), a partir de un resumen en JSON con los ingresos, gastos y citas agendadas.
+const SYSTEM_PROMPT = `Sos un asistente que responde preguntas sobre el negocio de manicure/pedicura MartiNails, en español (Chile), a partir de datos históricos en JSON.
 
-Respondé en 1-2 oraciones, concreto, sin rodeos. Usá los números del JSON tal cual - no inventes datos que no estén ahí. Si la pregunta no se puede responder con la información dada, decilo directamente.`;
+Los datos incluyen:
+- mesActual: el mes actual seleccionado
+- monthlySeries: historial de citas de todos los meses disponibles (busca el mes que pregunta en esta lista)
+- Otros datos del mes actual
+
+Respondé en 1-2 oraciones, concreto, sin rodeos. Usá los números del JSON tal cual. Si pregunta por otro mes, busca en monthlySeries. Si no hay datos para ese mes, decilo directamente.`;
 
 export async function answerDashboardQuestion(question: string, context: unknown): Promise<string> {
   try {

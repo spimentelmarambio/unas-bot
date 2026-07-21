@@ -18,20 +18,24 @@ export async function askDashboardQuestion(question: string, month: string): Pro
     console.log("[Chat Action] Datos obtenidos, summary:", summary.incomeTotal, appointmentStats?.totalAppointments);
 
     const context = {
-      mes: currentMonth,
-      ingresos: summary.incomeTotal,
-      serviciosRegistrados: summary.incomeCount,
-      gastos: summary.expenseTotal,
-      neto: summary.net,
+      mesActual: currentMonth,
+      resumen: {
+        ingresos: summary.incomeTotal,
+        serviciosRegistrados: summary.incomeCount,
+        gastos: summary.expenseTotal,
+        neto: summary.net,
+      },
       citas: appointmentStats
         ? {
             esteMes: appointmentStats.countThisMonth,
             promedioHistoricoPorMes: appointmentStats.averagePerMonth,
             promedioPorSemana: appointmentStats.averagePerWeek,
             totalHistorico: appointmentStats.totalAppointments,
-            mesConMasCitas: appointmentStats.busiestMonth,
+            mesConMasCitas: appointmentStats.busiestMonth?.month,
+            citasEnMesConMas: appointmentStats.busiestMonth?.count,
             variacionVsMesAnteriorPorcentaje: appointmentStats.changeVsPreviousMonth,
             porServicio: appointmentStats.serviceBreakdown,
+            monthlySeries: appointmentStats.monthlySeries,
           }
         : null,
     };
