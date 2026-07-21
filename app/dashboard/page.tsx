@@ -39,12 +39,13 @@ function isTransactionType(value: string | undefined): value is NailTransactionT
 }
 
 type Props = {
-  searchParams: Promise<{ month?: string; type?: string; service?: string }>;
+  searchParams: Promise<{ month?: string; type?: string; service?: string; section?: string }>;
 };
 
 export default async function DashboardPage({ searchParams }: Props) {
   const params = await searchParams;
   const month = params.month ?? santiagoMonthString();
+  const section = (params.section ?? "resumen") as "resumen" | "transacciones" | "citas";
   const range = monthRange(month);
   const type = isTransactionType(params.type) ? params.type : undefined;
   // A service filter only applies to income - if "Gastos" is also selected,
@@ -64,14 +65,62 @@ export default async function DashboardPage({ searchParams }: Props) {
   const showNetCard = !effectiveType;
 
   function monthHref(targetMonth: string): string {
-    const qp = new URLSearchParams({ month: targetMonth });
+    const qp = new URLSearchParams({ month: targetMonth, section });
+    if (params.type) qp.set("type", params.type);
+    if (params.service) qp.set("service", params.service);
+    return `/dashboard?${qp.toString()}`;
+  }
+
+  function sectionHref(newSection: string): string {
+    const qp = new URLSearchParams({ month, section: newSection });
     if (params.type) qp.set("type", params.type);
     if (params.service) qp.set("service", params.service);
     return `/dashboard?${qp.toString()}`;
   }
 
   return (
-    <main style={{ maxWidth: 760, margin: "0 auto", padding: "2rem 1.5rem" }}>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      {/* Sidebar */}
+      <aside style={{
+        width: 200,
+        padding: "1.5rem 1rem",
+        backgroundColor: "var(--card)",
+        borderRight: "1px solid var(--border)",
+        position: "sticky",
+        top: 0,
+        height: "100vh",
+        overflowY: "auto",
+      }}>
+        <h2 style={{ fontSize: "1rem", margin: "0 0 1.5rem", color: "var(--accent-dark)" }}>💅 MartiNails</h2>
+        <nav style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {[
+            { id: "resumen", label: "Resumen" },
+            { id: "transacciones", label: "Transacciones" },
+            { id: "citas", label: "Citas" },
+          ].map((item) => (
+            <a
+              key={item.id}
+              href={sectionHref(item.id)}
+              style={{
+                padding: "0.75rem 1rem",
+                borderRadius: "0.4rem",
+                backgroundColor: section === item.id ? "var(--pink-bg)" : "transparent",
+                color: section === item.id ? "var(--accent-dark)" : "var(--text)",
+                fontWeight: section === item.id ? 600 : 500,
+                fontSize: "0.9rem",
+                textDecoration: "none",
+                display: "block",
+                transition: "all 0.2s",
+              }}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main style={{ flex: 1, padding: "2rem 1.5rem", maxWidth: 900 }}>
       <h1 style={{ fontSize: "1.8rem", margin: "0 0 1.5rem", color: "var(--accent-dark)" }}>
         💅 MartiNails
       </h1>
@@ -244,7 +293,8 @@ export default async function DashboardPage({ searchParams }: Props) {
           </tbody>
         </table>
       </div>
-    </main>
+      </main>
+    </div>
   );
 }
 
