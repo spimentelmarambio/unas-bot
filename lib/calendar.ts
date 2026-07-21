@@ -10,7 +10,7 @@ export type Appointment = {
 export type MonthlyCount = { month: string; count: number };
 export type ServiceCount = { label: string; count: number };
 
-async function fetchAppointments(): Promise<Appointment[]> {
+export async function fetchAppointments(): Promise<Appointment[]> {
   const url = process.env.BOOKLY_CALENDAR_ICS_URL;
   if (!url) return [];
 
