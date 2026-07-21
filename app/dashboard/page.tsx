@@ -169,7 +169,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
       {/* Main Content */}
       <main style={{ flex: 1, padding: "2rem 2.5rem", maxWidth: "100%", width: "100%", overflowY: "auto", display: "flex", flexDirection: "column" }}>
-      <div style={{ maxWidth: "1000px", margin: "0 auto", width: "100%", flex: 1 }}>
+      <div style={{ maxWidth: "1300px", margin: "0 auto", width: "100%", flex: 1 }}>
 
       {/* RESUMEN SECTION */}
       {section === "resumen" && (
