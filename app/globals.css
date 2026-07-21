@@ -125,9 +125,9 @@ table.pretty tbody tr:hover {
     right: 0 !important;
     top: auto !important;
     height: auto !important;
-    border-right: none !important;
-    border-top: 1px solid var(--border) !important;
     padding: 0.6rem 0.3rem !important;
+    border-top: 1px solid var(--border) !important;
+    border-right: none !important;
     flex-direction: row !important;
     z-index: 1000 !important;
   }
@@ -146,6 +146,7 @@ table.pretty tbody tr:hover {
     flex: 1 !important;
     padding: 0.4rem 0.2rem !important;
     font-size: 0.65rem !important;
+    text-align: center !important;
   }
 
   .dashboard-sidebar > div:last-child {
