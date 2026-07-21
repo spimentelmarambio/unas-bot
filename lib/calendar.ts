@@ -1,6 +1,5 @@
 import * as ical from "node-ical";
 import { santiagoMonthString, shiftMonthString } from "./dates";
-import { SERVICE_TYPE_LABELS, type ServiceType } from "./schemas/message";
 
 export type Appointment = {
   title: string;
@@ -29,24 +28,22 @@ export async function fetchAppointments(): Promise<Appointment[]> {
   return appointments.sort((a, b) => a.start.getTime() - b.start.getTime());
 }
 
-// Notes/descripción a veces traen el servicio real cuando el título de la
-// cita es genérico (ej: "Otro"). Buscamos palabras clave de cada servicio
-// ahí antes de resignarnos a categorizar como "Otro".
-const SERVICE_KEYWORDS: Record<ServiceType, string[]> = {
-  ESMALTADO_PERMANENTE: ["esmaltado permanente", "esmaltado"],
-  GEL_X: ["gel x", "gel-x", "gelx"],
-  KAPPING: ["kapping", "capping"],
-};
+// Categorización de citas para el desglose del dashboard - independiente de
+// los NailServiceType usados por el bot de WhatsApp para registrar ingresos.
+// El título de Bookly trae el nombre del servicio (a veces con relleno como
+// "Servicio de GelX (Retiro de GelX de MartiNails)" o solo "Gelx"/"Biab"), así
+// que buscamos palabras clave en vez de exigir una coincidencia exacta.
+const APPOINTMENT_CATEGORIES: { label: string; keywords: string[] }[] = [
+  { label: "Esmaltado Permanente", keywords: ["esmaltado permanente", "esmaltado"] },
+  { label: "Gel X", keywords: ["gel x", "gel-x", "gelx"] },
+  { label: "Kapping", keywords: ["kapping", "capping"] },
+  { label: "Manicura Rusa (BIAB)", keywords: ["biab", "manicura rusa"] },
+];
 
-function matchServiceType(title: string, description: string): ServiceType | null {
-  const exactLabel = Object.entries(SERVICE_TYPE_LABELS).find(
-    ([, label]) => label.toLowerCase() === title.trim().toLowerCase()
-  );
-  if (exactLabel) return exactLabel[0] as ServiceType;
-
+function matchAppointmentCategory(title: string, description: string): string | null {
   const haystack = `${title} ${description}`.toLowerCase();
-  for (const [type, keywords] of Object.entries(SERVICE_KEYWORDS) as [ServiceType, string[]][]) {
-    if (keywords.some((k) => haystack.includes(k))) return type;
+  for (const category of APPOINTMENT_CATEGORIES) {
+    if (category.keywords.some((k) => haystack.includes(k))) return category.label;
   }
   return null;
 }
@@ -123,12 +120,10 @@ export async function getAppointmentStats(month: string): Promise<AppointmentSta
   const serviceCounts = new Map<string, number>();
   for (const a of appointments) {
     if (santiagoMonthString(a.start) !== month) continue;
-    const matched = matchServiceType(a.title, a.description);
-    const key = matched ? SERVICE_TYPE_LABELS[matched] : "Otro";
+    const key = matchAppointmentCategory(a.title, a.description) ?? "Otro";
     serviceCounts.set(key, (serviceCounts.get(key) ?? 0) + 1);
   }
-  const serviceBreakdown = Object.values(SERVICE_TYPE_LABELS)
-    .map((label) => ({ label, count: serviceCounts.get(label) ?? 0 }))
+  const serviceBreakdown = APPOINTMENT_CATEGORIES.map((c) => ({ label: c.label, count: serviceCounts.get(c.label) ?? 0 }))
     .concat(serviceCounts.has("Otro") ? [{ label: "Otro", count: serviceCounts.get("Otro")! }] : []);
 
   return {
