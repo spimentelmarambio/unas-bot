@@ -282,11 +282,10 @@ export default async function DashboardPage({ searchParams }: Props) {
             <h2 style={{ fontSize: "1.6rem", margin: "0", color: "var(--text)", fontWeight: 700 }}>Transacciones</h2>
             <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <button className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)" }}>← Anterior</button>
+                <a href={monthHref(shiftMonthString(month, -1))} className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>← Anterior</a>
                 <span style={{ minWidth: "120px", textAlign: "center", fontWeight: 600 }}>{monthLabel(month)}</span>
-                <button className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)" }}>Siguiente →</button>
+                <a href={monthHref(shiftMonthString(month, 1))} className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>Siguiente →</a>
               </div>
-              <a href="#" style={{ fontSize: "0.85rem", color: "var(--muted)" }}>📅 Fecha personalizada</a>
             </div>
           </div>
 
