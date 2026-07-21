@@ -1,5 +1,5 @@
 import { getSummary, getTransactions, monthRange } from "@/lib/transactions";
-import { getAppointmentStats, fetchAppointments } from "@/lib/calendar";
+import { getAppointmentStats, fetchAppointments, matchAppointmentCategory, APPOINTMENT_CATEGORY_LABELS } from "@/lib/calendar";
 import { santiagoMonthString, shiftMonthString } from "@/lib/dates";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
 import type { NailTransactionType } from "@/lib/generated/prisma/enums";
@@ -389,9 +389,10 @@ export default async function DashboardPage({ searchParams }: Props) {
               Servicio
               <select name="service" defaultValue={params.service ?? "ALL"} className="input">
                 <option value="ALL">Todos</option>
-                {SERVICE_TYPES.map((s) => (
-                  <option key={s} value={s}>{SERVICE_TYPE_LABELS[s]}</option>
+                {APPOINTMENT_CATEGORY_LABELS.map((label) => (
+                  <option key={label} value={label}>{label}</option>
                 ))}
+                <option value="Otro">Otro</option>
               </select>
             </label>
             <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
@@ -411,7 +412,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               <tbody>
                 {(() => {
                   const filtered = appointmentsThisMonth
-                    .filter((apt) => !params.service || apt.title.toLowerCase().includes(SERVICE_TYPE_LABELS[params.service as ServiceType]?.toLowerCase() || ""))
+                    .filter((apt) => !params.service || params.service === "ALL" || (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === params.service)
                     .sort((a, b) => b.start.getTime() - a.start.getTime());
                   return filtered.length === 0 ? (
                     <tr>

@@ -42,11 +42,13 @@ export async function fetchAppointments(): Promise<Appointment[]> {
 // El título de Bookly trae el nombre del servicio (a veces con relleno como
 // "Servicio de GelX (Retiro de GelX de MartiNails)" o solo "Gelx"/"Biab"), así
 // que buscamos palabras clave en vez de exigir una coincidencia exacta.
-const APPOINTMENT_CATEGORIES: { label: string; keywords: string[] }[] = [
+export const APPOINTMENT_CATEGORIES: { label: string; keywords: string[] }[] = [
   { label: "Esmaltado Permanente", keywords: ["esmaltado permanente", "esmaltado"] },
   { label: "Gel X", keywords: ["gel x", "gel-x", "gelx", "extension", "extensión"] },
   { label: "Manicura Rusa", keywords: ["biab", "manicura rusa", "kapping", "capping"] },
 ];
+
+export const APPOINTMENT_CATEGORY_LABELS = APPOINTMENT_CATEGORIES.map((c) => c.label);
 
 function findCategory(text: string): string | null {
   const lower = text.toLowerCase();
@@ -60,7 +62,7 @@ function findCategory(text: string): string | null {
 // ser el retiro del servicio anterior (ej: "Servicio de Manicura Rusa (BIAB)
 // (Retiro de GelX de MartiNails, ...)" es una cita de BIAB, no de Gel X).
 // Priorizamos esa parte antes de buscar en el texto completo.
-function matchAppointmentCategory(title: string, description: string): string | null {
+export function matchAppointmentCategory(title: string, description: string): string | null {
   const primary = `${title.split("(")[0]} ${description.split("(")[0]}`;
   return findCategory(primary) ?? findCategory(`${title} ${description}`);
 }
