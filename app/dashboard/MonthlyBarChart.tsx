@@ -39,8 +39,8 @@ export function MonthlyBarChart({ series, currentMonth }: Props) {
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      width="100%"
-      style={{ display: "block", maxWidth: "100%", height: "auto", minHeight: "400px" }}
+      width={width}
+      style={{ display: "block", height: "auto", minHeight: "300px" }}
       role="img"
       aria-label="Citas por mes"
     >
