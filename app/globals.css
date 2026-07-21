@@ -110,3 +110,78 @@ table.pretty tr:last-child td {
 table.pretty tbody tr:hover {
   background: var(--pink-bg-2);
 }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+  }
+
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0.5rem !important;
+  }
+
+  .sidebar nav {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0.5rem !important;
+    overflow-x: auto;
+  }
+
+  .sidebar nav a {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  main {
+    padding: 1rem !important;
+  }
+
+  .btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .input {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .card {
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 12px;
+  }
+
+  main {
+    padding: 0.75rem !important;
+  }
+
+  .btn {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .input {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .card {
+    border-radius: 8px;
+  }
+}

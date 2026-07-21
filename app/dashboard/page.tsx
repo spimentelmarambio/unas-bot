@@ -89,7 +89,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--pink-bg)" }}>
+    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--pink-bg)", flexDirection: "row" }} className="dashboard-container">
       {/* Sidebar - lateral */}
       <aside style={{
         width: "180px",
@@ -103,7 +103,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         flexShrink: 0,
         display: "flex",
         flexDirection: "column",
-      }}>
+      }} className="sidebar">
         <div style={{ marginBottom: "1.5rem", paddingLeft: "0.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", margin: "0", color: "var(--text)", fontWeight: 600 }}>💅 MartiNails</h2>
         </div>
@@ -174,7 +174,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* RESUMEN SECTION */}
       {section === "resumen" && (
         <>
-          <form method="get" className="card" style={{ display: "flex", gap: "2rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "2.5rem", padding: "1.5rem 2rem" }}>
+          <form method="get" className="card" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "2.5rem", padding: "1.2rem 1.2rem" }} className="filter-form">
             <input type="hidden" name="section" value="resumen" />
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <a href={monthHref(shiftMonthString(month, -1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
@@ -205,7 +205,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           {appointmentStats && (
             <>
               <h2 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)", textAlign: "center" }}>📊 Indicadores de Citas</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "0.8rem", marginBottom: "2rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.8rem", marginBottom: "2rem" }} className="kpi-grid">
                 <div className="card" style={cardStyle}>
                   <div style={cardLabelStyle}>Este mes</div>
                   <div style={cardValueStyle}>{appointmentStats.countThisMonth}</div>
