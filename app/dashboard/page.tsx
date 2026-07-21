@@ -439,8 +439,8 @@ export default async function DashboardPage({ searchParams }: Props) {
 }
 
 const cardStyle: React.CSSProperties = {
-  flex: "1 1 140px",
-  padding: "1rem 0.9rem",
+  flex: "1 1 120px",
+  padding: "0.9rem 0.7rem",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
