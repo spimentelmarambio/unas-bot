@@ -118,7 +118,7 @@ table.pretty tbody tr:hover {
   }
 
   .dashboard-container {
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
 
   .sidebar {
@@ -126,8 +126,9 @@ table.pretty tbody tr:hover {
     height: auto !important;
     position: relative !important;
     border-right: none;
-    border-bottom: 1px solid var(--border);
+    border-top: 1px solid var(--border);
     padding: 1rem 0.5rem !important;
+    order: 1;
   }
 
   .sidebar nav {
