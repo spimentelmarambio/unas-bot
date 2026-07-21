@@ -67,3 +67,4 @@ npm install
 npx prisma migrate dev   # crea la tabla NailIncomeEntry (no toca las de Lukas)
 npm run dev
 ```
+// Sidebar ready
