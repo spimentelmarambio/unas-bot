@@ -131,7 +131,8 @@ export default async function DashboardPage({ searchParams }: Props) {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: "1.5rem", maxWidth: "100%", width: "100%", overflowY: "auto" }}>
+      <main style={{ flex: 1, padding: "1.5rem", maxWidth: "100%", width: "100%", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", width: "100%", flex: 1 }}>
       <h1 style={{ fontSize: "1.4rem", margin: "0 0 1.5rem", color: "var(--accent-dark)" }}>
         💅 MartiNails
       </h1>
@@ -362,6 +363,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           </div>
         </>
       )}
+      </div>
       </main>
     </div>
   );
