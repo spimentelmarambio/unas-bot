@@ -52,10 +52,15 @@ model NailTransaction {
   note         String?
   date         DateTime            @default(now())
   whatsappFrom String
+  // wamid of the WhatsApp message that produced this row - lets the webhook
+  // detect a redelivered message (Meta retries, or our reply failing to
+  // send after the transaction was already saved) and skip logging it twice.
+  whatsappMessageId String?
   createdAt    DateTime            @default(now())
 
   @@index([date])
   @@index([type])
   @@index([serviceType])
+  @@index([whatsappMessageId])
   @@schema("unas_bot")
 }

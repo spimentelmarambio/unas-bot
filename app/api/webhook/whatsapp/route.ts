@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyWebhookSignature, parseIncomingMessage, sendWhatsAppMessage } from "@/lib/whatsapp";
 import { interpretMessage } from "@/lib/claude";
-import { createTransaction, getSummary, monthRange } from "@/lib/transactions";
+import { createTransaction, getSummary, monthRange, wasMessageAlreadyProcessed } from "@/lib/transactions";
 import { dateOnlyInSantiago, parseDateOnly } from "@/lib/dates";
 import { SERVICE_TYPE_LABELS, type Action } from "@/lib/schemas/message";
 
@@ -38,7 +38,11 @@ export function GET(request: Request) {
 // Runs one action and returns a short line describing what it did, or null
 // for "query_summary"/"other" (handled separately since they don't log
 // anything and shouldn't repeat the monthly totals per action).
-async function runLoggingAction(action: Action, whatsappFrom: string): Promise<string | null> {
+async function runLoggingAction(
+  action: Action,
+  whatsappFrom: string,
+  whatsappMessageId: string | null
+): Promise<string | null> {
   if (action.intent === "log_income") {
     const serviceLabel = SERVICE_TYPE_LABELS[action.serviceType];
     await createTransaction({
@@ -49,6 +53,7 @@ async function runLoggingAction(action: Action, whatsappFrom: string): Promise<s
       clientName: action.clientName,
       date: action.date ? parseDateOnly(action.date) : dateOnlyInSantiago(),
       whatsappFrom,
+      whatsappMessageId,
     });
     return `${serviceLabel} +${formatCLP(action.amount)}${action.clientName ? ` (${action.clientName})` : ""}`;
   }
@@ -59,6 +64,7 @@ async function runLoggingAction(action: Action, whatsappFrom: string): Promise<s
       description: action.description,
       date: action.date ? parseDateOnly(action.date) : dateOnlyInSantiago(),
       whatsappFrom,
+      whatsappMessageId,
     });
     return `${action.description} -${formatCLP(action.amount)}`;
   }
@@ -72,8 +78,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Firma inválida" }, { status: 401 });
   }
 
-  const payload = JSON.parse(rawBody);
-  const incoming = parseIncomingMessage(payload);
+  let incoming: ReturnType<typeof parseIncomingMessage>;
+  try {
+    incoming = parseIncomingMessage(JSON.parse(rawBody));
+  } catch (error) {
+    console.error("Error parseando payload de WhatsApp:", error);
+    return NextResponse.json({ ok: true });
+  }
 
   // Not an inbound text message (e.g. a delivery/read status ping) - just ack.
   if (!incoming) {
@@ -82,6 +93,12 @@ export async function POST(request: Request) {
 
   // Ignore anyone who isn't the one person this bot is for.
   if (!isAllowedSender(incoming.from)) {
+    return NextResponse.json({ ok: true });
+  }
+
+  // Meta redelivers a webhook it didn't get a fast 200 for - if we already
+  // logged a transaction for this exact message, don't do it again.
+  if (incoming.id && (await wasMessageAlreadyProcessed(incoming.id))) {
     return NextResponse.json({ ok: true });
   }
 
@@ -105,7 +122,7 @@ export async function POST(request: Request) {
       } else if (action.intent === "other") {
         sawOther = true;
       } else {
-        const line = await runLoggingAction(action, incoming.from);
+        const line = await runLoggingAction(action, incoming.from, incoming.id);
         if (line) loggedLines.push(line);
       }
     }

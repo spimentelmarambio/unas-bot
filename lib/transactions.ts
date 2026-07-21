@@ -12,6 +12,7 @@ export type NewTransaction = {
   note?: string | null;
   date?: Date;
   whatsappFrom: string;
+  whatsappMessageId?: string | null;
 };
 
 export async function createTransaction(input: NewTransaction) {
@@ -25,8 +26,21 @@ export async function createTransaction(input: NewTransaction) {
       note: input.note ?? null,
       date: input.date ?? dateOnlyInSantiago(),
       whatsappFrom: input.whatsappFrom,
+      whatsappMessageId: input.whatsappMessageId ?? null,
     },
   });
+}
+
+// Meta redelivers webhooks it didn't get a fast 200 for, and our own reply
+// can fail after a transaction was already saved - both would otherwise
+// double-log the same income/expense. Checked once per incoming message
+// before any action runs.
+export async function wasMessageAlreadyProcessed(whatsappMessageId: string): Promise<boolean> {
+  const existing = await prisma.nailTransaction.findFirst({
+    where: { whatsappMessageId },
+    select: { id: true },
+  });
+  return existing !== null;
 }
 
 // month: "YYYY-MM"; defaults to the current Santiago calendar month.

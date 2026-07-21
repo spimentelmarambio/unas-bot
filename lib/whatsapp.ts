@@ -17,6 +17,8 @@ export function verifyWebhookSignature(rawBody: string, signatureHeader: string 
 export type IncomingWhatsAppMessage = {
   from: string;
   text: string;
+  // wamid - unique per message, used to detect a redelivered webhook.
+  id: string | null;
 };
 
 // Meta sends both real messages and status-update pings (delivered/read) to
@@ -28,7 +30,7 @@ export function parseIncomingMessage(payload: unknown): IncomingWhatsAppMessage 
     | undefined;
   const change = entry?.changes?.[0] as { value?: unknown } | undefined;
   const value = change?.value as
-    | { messages?: { from?: string; type?: string; text?: { body?: string } }[] }
+    | { messages?: { id?: string; from?: string; type?: string; text?: { body?: string } }[] }
     | undefined;
   const message = value?.messages?.[0];
 
@@ -36,7 +38,7 @@ export function parseIncomingMessage(payload: unknown): IncomingWhatsAppMessage 
     return null;
   }
 
-  return { from: message.from, text: message.text.body };
+  return { from: message.from, text: message.text.body, id: message.id ?? null };
 }
 
 export async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
