@@ -10,6 +10,16 @@ export type Appointment = {
 export type MonthlyCount = { month: string; count: number };
 export type ServiceCount = { label: string; count: number };
 
+// Bloqueos de tiempo personal (no son citas de clientas) - ej: "Alisado" es
+// ella agendando su propio pelo, no un servicio de uñas. Se excluyen por
+// completo de las estadísticas y del listado de citas.
+const PERSONAL_BLOCK_KEYWORDS = ["alisado"];
+
+function isPersonalBlock(title: string, description: string): boolean {
+  const text = `${title} ${description}`.toLowerCase();
+  return PERSONAL_BLOCK_KEYWORDS.some((k) => text.includes(k));
+}
+
 export async function fetchAppointments(): Promise<Appointment[]> {
   const url = process.env.BOOKLY_CALENDAR_ICS_URL;
   if (!url) return [];
@@ -18,11 +28,10 @@ export async function fetchAppointments(): Promise<Appointment[]> {
   const appointments: Appointment[] = [];
   for (const entry of Object.values(data)) {
     if (entry && entry.type === "VEVENT") {
-      appointments.push({
-        title: String(entry.summary ?? ""),
-        description: String(entry.description ?? ""),
-        start: new Date(entry.start),
-      });
+      const title = String(entry.summary ?? "");
+      const description = String(entry.description ?? "");
+      if (isPersonalBlock(title, description)) continue;
+      appointments.push({ title, description, start: new Date(entry.start) });
     }
   }
   return appointments.sort((a, b) => a.start.getTime() - b.start.getTime());
@@ -35,7 +44,7 @@ export async function fetchAppointments(): Promise<Appointment[]> {
 // que buscamos palabras clave en vez de exigir una coincidencia exacta.
 const APPOINTMENT_CATEGORIES: { label: string; keywords: string[] }[] = [
   { label: "Esmaltado Permanente", keywords: ["esmaltado permanente", "esmaltado"] },
-  { label: "Gel X", keywords: ["gel x", "gel-x", "gelx"] },
+  { label: "Gel X", keywords: ["gel x", "gel-x", "gelx", "extension", "extensión"] },
   { label: "Kapping", keywords: ["kapping", "capping"] },
   { label: "Manicura Rusa (BIAB)", keywords: ["biab", "manicura rusa"] },
 ];
