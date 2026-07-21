@@ -89,18 +89,21 @@ export default async function DashboardPage({ searchParams }: Props) {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column" }}>
-      {/* Sidebar - responsive */}
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      {/* Sidebar - lateral */}
       <aside style={{
-        width: "100%",
-        maxWidth: "100%",
-        padding: "1rem",
+        width: "200px",
+        padding: "1.5rem 1rem",
         backgroundColor: "var(--card)",
-        borderBottom: "1px solid var(--border)",
-        borderRight: "none",
+        borderRight: "1px solid var(--border)",
+        position: "sticky",
+        top: 0,
+        height: "100vh",
+        overflowY: "auto",
+        flexShrink: 0,
       }}>
-        <h2 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--accent-dark)" }}>💅 MartiNails</h2>
-        <nav style={{ display: "flex", flexDirection: "row", gap: "0.5rem", overflowX: "auto" }}>
+        <h2 style={{ fontSize: "0.95rem", margin: "0 0 1.5rem", color: "var(--accent-dark)", fontWeight: 600 }}>💅 MartiNails</h2>
+        <nav style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {[
             { id: "resumen", label: "📊 Resumen" },
             { id: "transacciones", label: "💰 Transacciones" },
@@ -118,9 +121,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                 fontSize: "0.85rem",
                 textDecoration: "none",
                 display: "block",
-                whiteSpace: "nowrap",
                 transition: "all 0.2s",
-                flexShrink: 0,
               }}
             >
               {item.label}
@@ -130,7 +131,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: "1.5rem", maxWidth: "100%", width: "100%" }}>
+      <main style={{ flex: 1, padding: "1.5rem", maxWidth: "100%", width: "100%", overflowY: "auto" }}>
       <h1 style={{ fontSize: "1.4rem", margin: "0 0 1.5rem", color: "var(--accent-dark)" }}>
         💅 MartiNails
       </h1>
