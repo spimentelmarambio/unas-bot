@@ -111,19 +111,27 @@ table.pretty tbody tr:hover {
   background: var(--pink-bg-2);
 }
 
-/* Responsive Design */
-@media screen and (max-width: 768px) {
-  aside {
+/* Mobile-First Responsive */
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+  }
+
+  div[style*="display: flex"] {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+  }
+
+  aside[style*="width: 180px"] {
+    width: 100vw !important;
     position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
-    right: 0 !important;
-    top: auto !important;
-    width: 100% !important;
     height: auto !important;
-    border-right: none !important;
-    border-top: 1px solid var(--border) !important;
     padding: 0.6rem 0.3rem !important;
+    border-top: 1px solid var(--border) !important;
+    border-right: none !important;
+    flex-direction: row !important;
     z-index: 1000 !important;
   }
 
@@ -134,24 +142,24 @@ table.pretty tbody tr:hover {
   aside nav {
     display: flex !important;
     flex-direction: row !important;
-    gap: 0.2rem !important;
     width: 100% !important;
+    gap: 0 !important;
   }
 
   aside nav a {
     flex: 1 !important;
-    padding: 0.4rem 0.3rem !important;
-    font-size: 0.7rem !important;
+    padding: 0.4rem 0.2rem !important;
+    font-size: 0.65rem !important;
     text-align: center !important;
   }
 
-  aside > div {
+  aside > div:last-child {
     display: none !important;
   }
 
   main {
     padding: 0.8rem !important;
-    padding-bottom: 65px !important;
+    padding-bottom: 70px !important;
   }
 
   .btn {
@@ -170,7 +178,6 @@ table.pretty tbody tr:hover {
 
   .filter-form {
     flex-direction: column !important;
-    gap: 0.6rem !important;
     padding: 0.8rem !important;
   }
 }
