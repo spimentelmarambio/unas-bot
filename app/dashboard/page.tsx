@@ -191,6 +191,29 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* RESUMEN SECTION */}
       {section === "resumen" && (
         <>
+          <form method="get" className="card" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
+            <input type="hidden" name="section" value="resumen" />
+            <label style={labelStyle}>
+              Tipo
+              <select name="type" defaultValue={params.type ?? "ALL"} className="input">
+                <option value="ALL">Todos</option>
+                <option value="INCOME">Ingresos</option>
+                <option value="EXPENSE">Gastos</option>
+              </select>
+            </label>
+            <label style={labelStyle}>
+              Servicio
+              <select name="service" defaultValue={params.service ?? "ALL"} className="input" disabled={params.type === "EXPENSE"}>
+                <option value="ALL">Todos</option>
+                {SERVICE_TYPES.map((s) => (
+                  <option key={s} value={s}>{SERVICE_TYPE_LABELS[s]}</option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
+            {hasActiveFilters && <a href={`/dashboard?section=resumen`} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
+          </form>
+
           {appointmentStats && (
             <>
               <h2 style={{ fontSize: "1.1rem", margin: "0 0 0.75rem", color: "var(--text)" }}>📊 Indicadores de Citas</h2>

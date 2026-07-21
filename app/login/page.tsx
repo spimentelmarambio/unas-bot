@@ -17,6 +17,7 @@ export default function LoginPage() {
       const encodedCredentials = btoa(`${username}:${password}`);
       const response = await fetch("/dashboard", {
         headers: { Authorization: `Basic ${encodedCredentials}` },
+        credentials: "include",
       });
 
       if (response.ok) {
