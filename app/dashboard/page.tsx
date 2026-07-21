@@ -169,7 +169,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
       {/* Main Content */}
       <main style={{ flex: 1, padding: "2rem 2.5rem", maxWidth: "100%", width: "100%", overflowY: "auto", display: "flex", flexDirection: "column" }}>
-      <div style={{ maxWidth: "1500px", margin: "0 auto", width: "100%", flex: 1 }}>
+      <div style={{ maxWidth: "1600px", margin: "0 auto", width: "100%", flex: 1 }}>
 
       {/* RESUMEN SECTION */}
       {section === "resumen" && (
@@ -439,13 +439,17 @@ export default async function DashboardPage({ searchParams }: Props) {
 }
 
 const cardStyle: React.CSSProperties = {
-  flex: "1 1 160px",
-  padding: "0.9rem 1.1rem",
+  flex: "1 1 140px",
+  padding: "1rem 0.9rem",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  textAlign: "center",
 };
 
-const cardLabelStyle: React.CSSProperties = { fontSize: "0.8rem", color: "var(--muted)" };
-const cardValueStyle: React.CSSProperties = { fontSize: "1.5rem", fontWeight: 700 };
-const cardSubStyle: React.CSSProperties = { fontSize: "0.75rem", color: "var(--muted)" };
+const cardLabelStyle: React.CSSProperties = { fontSize: "0.8rem", color: "var(--muted)", marginBottom: "0.4rem" };
+const cardValueStyle: React.CSSProperties = { fontSize: "1.8rem", fontWeight: 700, lineHeight: 1 };
+const cardSubStyle: React.CSSProperties = { fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.3rem" };
 const labelStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
