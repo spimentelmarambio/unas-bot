@@ -205,7 +205,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           {appointmentStats && (
             <>
               <h2 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)", textAlign: "center" }}>📊 Indicadores de Citas</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem", marginBottom: "2rem", maxWidth: "900px", margin: "0 auto 2rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "0.8rem", marginBottom: "2rem" }}>
                 <div className="card" style={cardStyle}>
                   <div style={cardLabelStyle}>Este mes</div>
                   <div style={cardValueStyle}>{appointmentStats.countThisMonth}</div>
