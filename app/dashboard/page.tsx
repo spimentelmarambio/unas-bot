@@ -174,7 +174,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* RESUMEN SECTION */}
       {section === "resumen" && (
         <>
-          <form method="get" className="card" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "2rem", padding: "1.2rem 1.5rem" }}>
+          <form method="get" className="card" style={{ display: "flex", gap: "2rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "2.5rem", padding: "1.5rem 2rem" }}>
             <input type="hidden" name="section" value="resumen" />
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <a href={monthHref(shiftMonthString(month, -1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
