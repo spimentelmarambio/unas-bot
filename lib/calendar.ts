@@ -45,8 +45,7 @@ export async function fetchAppointments(): Promise<Appointment[]> {
 const APPOINTMENT_CATEGORIES: { label: string; keywords: string[] }[] = [
   { label: "Esmaltado Permanente", keywords: ["esmaltado permanente", "esmaltado"] },
   { label: "Gel X", keywords: ["gel x", "gel-x", "gelx", "extension", "extensión"] },
-  { label: "Kapping", keywords: ["kapping", "capping"] },
-  { label: "Manicura Rusa (BIAB)", keywords: ["biab", "manicura rusa"] },
+  { label: "Manicura Rusa", keywords: ["biab", "manicura rusa", "kapping", "capping"] },
 ];
 
 function findCategory(text: string): string | null {
