@@ -40,12 +40,21 @@ const APPOINTMENT_CATEGORIES: { label: string; keywords: string[] }[] = [
   { label: "Manicura Rusa (BIAB)", keywords: ["biab", "manicura rusa"] },
 ];
 
-function matchAppointmentCategory(title: string, description: string): string | null {
-  const haystack = `${title} ${description}`.toLowerCase();
+function findCategory(text: string): string | null {
+  const lower = text.toLowerCase();
   for (const category of APPOINTMENT_CATEGORIES) {
-    if (category.keywords.some((k) => haystack.includes(k))) return category.label;
+    if (category.keywords.some((k) => lower.includes(k))) return category.label;
   }
   return null;
+}
+
+// El texto antes del primer "(" es el servicio principal; lo que sigue suele
+// ser el retiro del servicio anterior (ej: "Servicio de Manicura Rusa (BIAB)
+// (Retiro de GelX de MartiNails, ...)" es una cita de BIAB, no de Gel X).
+// Priorizamos esa parte antes de buscar en el texto completo.
+function matchAppointmentCategory(title: string, description: string): string | null {
+  const primary = `${title.split("(")[0]} ${description.split("(")[0]}`;
+  return findCategory(primary) ?? findCategory(`${title} ${description}`);
 }
 
 function daysElapsedInMonth(month: string): number {
