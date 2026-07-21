@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Username+password gate for /dashboard - this app has no user accounts at
-// all (single WhatsApp number in, one dashboard out), so a full auth system
-// would be overkill. Browsers show their native login prompt for HTTP Basic
-// Auth, no login page needed.
+// Username+password gate for /dashboard with session cookie
 export function proxy(request: NextRequest) {
   const username = process.env.DASHBOARD_USERNAME;
   const password = process.env.DASHBOARD_PASSWORD;
@@ -15,19 +12,35 @@ export function proxy(request: NextRequest) {
     );
   }
 
+  // Check for Authorization header (from login form)
   const auth = request.headers.get("authorization");
-  const [, encoded] = auth?.split(" ") ?? [];
-  const decoded = encoded ? Buffer.from(encoded, "base64").toString("utf-8") : "";
-  const [providedUsername, providedPassword] = decoded.split(":");
+  if (auth) {
+    const [, encoded] = auth.split(" ");
+    const decoded = Buffer.from(encoded, "base64").toString("utf-8");
+    const [providedUsername, providedPassword] = decoded.split(":");
 
-  if (providedUsername === username && providedPassword === password) {
+    if (providedUsername === username && providedPassword === password) {
+      // Set httpOnly cookie for session
+      const response = NextResponse.next();
+      response.cookies.set("auth", "true", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      });
+      return response;
+    }
+    // Auth header present but invalid
+    return NextResponse.redirect(new URL("/login?error=invalid", request.url));
+  }
+
+  // Check for session cookie
+  if (request.cookies.get("auth")?.value === "true") {
     return NextResponse.next();
   }
 
-  return new NextResponse("Autenticación requerida", {
-    status: 401,
-    headers: { "WWW-Authenticate": 'Basic realm="Dashboard"' },
-  });
+  // No auth - redirect to login
+  return NextResponse.redirect(new URL("/login", request.url));
 }
 
 export const config = {
