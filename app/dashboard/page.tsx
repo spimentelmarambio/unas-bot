@@ -294,6 +294,11 @@ export default async function DashboardPage({ searchParams }: Props) {
                   </div>
                 )}
               </div>
+              {summary.incomeCount === 0 && summary.expenseCount === 0 && !hasActiveFilters && (
+                <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "-1rem", marginBottom: "2rem" }}>
+                  Aún no hay ingresos ni gastos registrados este mes. Escríbele a tu bot de WhatsApp para anotarlos (ej: &quot;hice un gel x de 20000&quot;).
+                </p>
+              )}
             </>
           )}
           <ChatPanel month={month} />
@@ -373,7 +378,9 @@ export default async function DashboardPage({ searchParams }: Props) {
                 {transactions.length === 0 && (
                   <tr>
                     <td colSpan={4} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
-                      {hasActiveFilters ? "No hay transacciones con estos filtros" : "No hay transacciones"}
+                      {hasActiveFilters
+                        ? "No hay transacciones con estos filtros"
+                        : "No hay transacciones. Escríbele a tu bot de WhatsApp para registrar un ingreso o gasto."}
                     </td>
                   </tr>
                 )}
