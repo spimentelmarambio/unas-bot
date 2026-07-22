@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 export function DeleteButton({
   id,
@@ -12,16 +12,24 @@ export function DeleteButton({
   label?: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState(false);
 
   return (
     <button
       type="button"
       disabled={isPending}
       aria-label={`Borrar ${label}`}
+      title={error ? "No se pudo borrar, intenta de nuevo" : undefined}
       onClick={() => {
-        if (confirm(`¿Estás seguro de borrar ${label}?`)) {
-          startTransition(() => action(id));
-        }
+        if (!confirm(`¿Estás seguro de borrar ${label}?`)) return;
+        setError(false);
+        startTransition(async () => {
+          try {
+            await action(id);
+          } catch {
+            setError(true);
+          }
+        });
       }}
       style={{
         border: "1px solid var(--expense)",
@@ -34,7 +42,7 @@ export function DeleteButton({
         opacity: isPending ? 0.5 : 1,
       }}
     >
-      {isPending ? "…" : "Borrar"}
+      {isPending ? "…" : error ? "Error, reintentar" : "Borrar"}
     </button>
   );
 }

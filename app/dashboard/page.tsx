@@ -7,6 +7,7 @@ import { deleteTransactionAction } from "./actions";
 import { DeleteButton } from "./DeleteButton";
 import { MonthlyBarChart } from "./MonthlyBarChart";
 import { ChatPanel } from "./ChatPanel";
+import { TypeServiceFilter } from "./TypeServiceFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -183,27 +184,15 @@ export default async function DashboardPage({ searchParams }: Props) {
           <form method="get" className="card filter-form" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "2.5rem", padding: "1.2rem 1.2rem" }}>
             <input type="hidden" name="section" value="resumen" />
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <a href={monthHref(shiftMonthString(month, -1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
+              <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
               <span style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
-              <a href={monthHref(shiftMonthString(month, 1))} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
+              <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
             </div>
-            <label style={labelStyle}>
-              Tipo
-              <select name="type" defaultValue={params.type ?? "ALL"} className="input">
-                <option value="ALL">Todos</option>
-                <option value="INCOME">Ingresos</option>
-                <option value="EXPENSE">Gastos</option>
-              </select>
-            </label>
-            <label style={labelStyle}>
-              Servicio
-              <select name="service" defaultValue={params.service ?? "ALL"} className="input" disabled={params.type === "EXPENSE"}>
-                <option value="ALL">Todos</option>
-                {SERVICE_TYPES.map((s) => (
-                  <option key={s} value={s}>{SERVICE_TYPE_LABELS[s]}</option>
-                ))}
-              </select>
-            </label>
+            <TypeServiceFilter
+              defaultType={params.type ?? "ALL"}
+              defaultService={params.service ?? "ALL"}
+              serviceOptions={SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))}
+            />
             <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
             {hasActiveFilters && <a href={clearFiltersHref("resumen")} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
@@ -299,9 +288,9 @@ export default async function DashboardPage({ searchParams }: Props) {
             <h2 style={{ fontSize: "1.6rem", margin: "0", color: "var(--text)", fontWeight: 700 }}>Transacciones</h2>
             <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <a href={monthHref(shiftMonthString(month, -1))} className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>← Anterior</a>
+                <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>← Anterior</a>
                 <span style={{ minWidth: "120px", textAlign: "center", fontWeight: 600 }}>{monthLabel(month)}</span>
-                <a href={monthHref(shiftMonthString(month, 1))} className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>Siguiente →</a>
+                <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>Siguiente →</a>
               </div>
             </div>
           </div>
@@ -325,23 +314,11 @@ export default async function DashboardPage({ searchParams }: Props) {
 
           <form method="get" className="card filter-form" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
             <input type="hidden" name="section" value="transacciones" />
-            <label style={labelStyle}>
-              Tipo
-              <select name="type" defaultValue={params.type ?? "ALL"} className="input">
-                <option value="ALL">Todos</option>
-                <option value="INCOME">Ingresos</option>
-                <option value="EXPENSE">Gastos</option>
-              </select>
-            </label>
-            <label style={labelStyle}>
-              Servicio
-              <select name="service" defaultValue={params.service ?? "ALL"} className="input" disabled={params.type === "EXPENSE"}>
-                <option value="ALL">Todos</option>
-                {SERVICE_TYPES.map((s) => (
-                  <option key={s} value={s}>{SERVICE_TYPE_LABELS[s]}</option>
-                ))}
-              </select>
-            </label>
+            <TypeServiceFilter
+              defaultType={params.type ?? "ALL"}
+              defaultService={params.service ?? "ALL"}
+              serviceOptions={SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))}
+            />
             <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
             {hasActiveFilters && <a href={clearFiltersHref("transacciones")} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
@@ -390,6 +367,10 @@ export default async function DashboardPage({ searchParams }: Props) {
         <>
           <form method="get" className="card filter-form" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
             <input type="hidden" name="section" value="citas" />
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
+              <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
+            </div>
             <label style={labelStyle}>
               Mes
               <select name="month" defaultValue={month} className="input">
