@@ -101,6 +101,7 @@ table.pretty td {
   padding: 0.8rem 0.9rem;
   font-size: 0.9rem;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 table.pretty tr:last-child td {
