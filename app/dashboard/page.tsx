@@ -8,8 +8,18 @@ import { DeleteButton } from "./DeleteButton";
 import { MonthlyBarChart } from "./MonthlyBarChart";
 import { ChatPanel } from "./ChatPanel";
 import { TypeServiceFilter } from "./TypeServiceFilter";
+import { MonthSelect } from "./MonthSelect";
 
 export const dynamic = "force-dynamic";
+
+const MONTH_DROPDOWN_OFFSETS = [-11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0];
+
+function monthOptions(month: string): { value: string; label: string }[] {
+  return MONTH_DROPDOWN_OFFSETS.map((offset) => {
+    const m = shiftMonthString(month, offset);
+    return { value: m, label: monthLabel(m) };
+  });
+}
 
 function formatCLP(amount: number): string {
   return amount.toLocaleString("es-CL", {
@@ -188,6 +198,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               <span style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
               <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
             </div>
+            <MonthSelect defaultValue={month} options={monthOptions(month)} />
             <TypeServiceFilter
               defaultType={params.type ?? "ALL"}
               defaultService={params.service ?? "ALL"}
@@ -320,6 +331,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
           <form method="get" className="card filter-form" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
             <input type="hidden" name="section" value="transacciones" />
+            <MonthSelect defaultValue={month} options={monthOptions(month)} />
             <TypeServiceFilter
               defaultType={params.type ?? "ALL"}
               defaultService={params.service ?? "ALL"}
@@ -377,15 +389,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
               <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
             </div>
-            <label style={labelStyle}>
-              Mes
-              <select name="month" defaultValue={month} className="input">
-                {[-11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0].map((offset) => {
-                  const m = shiftMonthString(month, offset);
-                  return <option key={m} value={m}>{monthLabel(m)}</option>;
-                })}
-              </select>
-            </label>
+            <MonthSelect defaultValue={month} options={monthOptions(month)} />
             <label style={labelStyle}>
               Servicio
               <select name="service" defaultValue={params.service ?? "ALL"} className="input">

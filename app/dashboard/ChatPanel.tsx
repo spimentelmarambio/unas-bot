@@ -7,21 +7,24 @@ type Props = {
   month: string;
 };
 
+type Exchange = { question: string; answer: string };
+
 export function ChatPanel({ month }: Props) {
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [history, setHistory] = useState<Exchange[]>([]);
   const [isPending, startTransition] = useTransition();
 
   const handleAsk = () => {
-    if (!question.trim()) return;
+    const asked = question.trim();
+    if (!asked) return;
     startTransition(async () => {
       try {
-        const response = await askDashboardQuestion(question, month);
-        setAnswer(response);
+        const response = await askDashboardQuestion(asked, month);
+        setHistory((prev) => [...prev, { question: asked, answer: response }]);
         setQuestion("");
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
-        setAnswer(`Error: ${errorMsg}`);
+        setHistory((prev) => [...prev, { question: asked, answer: `Error: ${errorMsg}` }]);
       }
     });
   };
@@ -45,18 +48,25 @@ export function ChatPanel({ month }: Props) {
           {isPending ? "…" : "Preguntar"}
         </button>
       </div>
-      {answer && (
-        <div
-          style={{
-            padding: "1rem",
-            backgroundColor: "var(--pink-bg-2)",
-            borderRadius: "0.5rem",
-            fontSize: "0.9rem",
-            color: "var(--text)",
-            lineHeight: 1.5,
-          }}
-        >
-          {answer}
+      {history.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxHeight: "420px", overflowY: "auto" }}>
+          {history.map((exchange, i) => (
+            <div key={i} style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              <div style={{ fontSize: "0.85rem", color: "var(--muted)", fontWeight: 600 }}>{exchange.question}</div>
+              <div
+                style={{
+                  padding: "1rem",
+                  backgroundColor: "var(--pink-bg-2)",
+                  borderRadius: "0.5rem",
+                  fontSize: "0.9rem",
+                  color: "var(--text)",
+                  lineHeight: 1.5,
+                }}
+              >
+                {exchange.answer}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
