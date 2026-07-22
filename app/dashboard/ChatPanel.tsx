@@ -33,6 +33,7 @@ export function ChatPanel({ month }: Props) {
         <input
           type="text"
           className="input"
+          aria-label="Pregunta para la IA sobre el negocio"
           placeholder="¿Cuánto gané este mes? ¿Cuántas citas en junio?"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}

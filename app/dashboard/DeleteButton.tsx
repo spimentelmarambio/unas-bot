@@ -2,15 +2,24 @@
 
 import { useTransition } from "react";
 
-export function DeleteButton({ id, action }: { id: string; action: (id: string) => Promise<void> }) {
+export function DeleteButton({
+  id,
+  action,
+  label = "esta transacción",
+}: {
+  id: string;
+  action: (id: string) => Promise<void>;
+  label?: string;
+}) {
   const [isPending, startTransition] = useTransition();
 
   return (
     <button
       type="button"
       disabled={isPending}
+      aria-label={`Borrar ${label}`}
       onClick={() => {
-        if (confirm("¿Estás seguro de borrar esta transacción?")) {
+        if (confirm(`¿Estás seguro de borrar ${label}?`)) {
           startTransition(() => action(id));
         }
       }}

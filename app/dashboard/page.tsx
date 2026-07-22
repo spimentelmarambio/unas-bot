@@ -88,6 +88,12 @@ export default async function DashboardPage({ searchParams }: Props) {
     return `/dashboard?${qp.toString()}`;
   }
 
+  // "Limpiar" only drops the type/service filters - it shouldn't also bounce
+  // the user back to the current month if they were browsing a past one.
+  function clearFiltersHref(targetSection: string): string {
+    return `/dashboard?${new URLSearchParams({ month, section: targetSection }).toString()}`;
+  }
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "var(--pink-bg)", flexDirection: "row" }} className="dashboard-container">
       {/* Sidebar - lateral */}
@@ -137,14 +143,14 @@ export default async function DashboardPage({ searchParams }: Props) {
           ))}
         </nav>
 
-        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "0.8rem", marginTop: "1rem", opacity: 0.5 }}>
+        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "0.8rem", marginTop: "1rem" }}>
           <nav style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
             {[
               { id: "chat", label: "Chat IA", icon: "💬" },
             ].map((item) => (
               <a
                 key={item.id}
-                href="#"
+                href={sectionHref("resumen")}
                 style={{
                   padding: "0.6rem 0.8rem",
                   borderRadius: "8px",
@@ -199,7 +205,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               </select>
             </label>
             <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
-            {hasActiveFilters && <a href={`/dashboard?section=resumen`} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
+            {hasActiveFilters && <a href={clearFiltersHref("resumen")} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
           {appointmentStats && (
@@ -337,7 +343,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               </select>
             </label>
             <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
-            {hasActiveFilters && <a href={`/dashboard?section=transacciones`} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
+            {hasActiveFilters && <a href={clearFiltersHref("transacciones")} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
           <div className="card" style={{ overflowX: "auto" }}>
             <table className="pretty">
@@ -357,12 +363,20 @@ export default async function DashboardPage({ searchParams }: Props) {
                     <td style={{ textAlign: "right", color: t.type === "INCOME" ? "var(--income)" : "var(--expense)", fontWeight: 600 }}>
                       {t.type === "INCOME" ? "+" : "-"}{formatCLP(Number(t.amount))}
                     </td>
-                    <td style={{ textAlign: "right" }}><DeleteButton id={t.id} action={deleteTransactionAction} /></td>
+                    <td style={{ textAlign: "right" }}>
+                      <DeleteButton
+                        id={t.id}
+                        action={deleteTransactionAction}
+                        label={`${t.description}${t.clientName ? ` (${t.clientName})` : ""} del ${formatDate(t.date)}, ${formatCLP(Number(t.amount))}`}
+                      />
+                    </td>
                   </tr>
                 ))}
                 {transactions.length === 0 && (
                   <tr>
-                    <td colSpan={4} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>No hay transacciones</td>
+                    <td colSpan={4} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
+                      {hasActiveFilters ? "No hay transacciones con estos filtros" : "No hay transacciones"}
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -396,7 +410,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               </select>
             </label>
             <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
-            {params.service && params.service !== "ALL" && <a href={`/dashboard?section=citas`} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
+            {params.service && params.service !== "ALL" && <a href={clearFiltersHref("citas")} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
           <h2 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h2>
@@ -411,19 +425,24 @@ export default async function DashboardPage({ searchParams }: Props) {
               </thead>
               <tbody>
                 {(() => {
+                  const hasServiceFilter = Boolean(params.service && params.service !== "ALL");
                   const filtered = appointmentsThisMonth
-                    .filter((apt) => !params.service || params.service === "ALL" || (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === params.service)
+                    .filter((apt) => !hasServiceFilter || (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === params.service)
                     .sort((a, b) => b.start.getTime() - a.start.getTime());
                   return filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={3} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>No hay citas</td>
+                      <td colSpan={3} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
+                        {hasServiceFilter ? "No hay citas con este filtro" : "No hay citas"}
+                      </td>
                     </tr>
                   ) : (
                     filtered.map((apt, idx) => (
                       <tr key={`${apt.start.getTime()}-${idx}`}>
                         <td>{formatDate(apt.start)}</td>
                         <td>{formatTime(apt.start)}</td>
-                        <td style={{ fontSize: "0.85rem" }}>{apt.title || "Sin nombre"}</td>
+                        <td style={{ fontSize: "0.85rem" }} title={apt.title || undefined}>
+                          {matchAppointmentCategory(apt.title, apt.description) ?? (apt.title || "Sin nombre")}
+                        </td>
                       </tr>
                     ))
                   );
