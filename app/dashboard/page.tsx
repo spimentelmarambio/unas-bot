@@ -260,20 +260,26 @@ export default async function DashboardPage({ searchParams }: Props) {
 
               <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}>💵 Ingresos & Gastos</h3>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
-                <div className="card" style={cardStyle}>
-                  <div style={cardLabelStyle}>Ingresos</div>
-                  <div style={{ ...cardValueStyle, color: "var(--income)" }}>{formatCLP(summary.incomeTotal)}</div>
-                  <div style={cardSubStyle}>{summary.incomeCount} registros</div>
-                </div>
-                <div className="card" style={cardStyle}>
-                  <div style={cardLabelStyle}>Gastos</div>
-                  <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.expenseTotal)}</div>
-                  <div style={cardSubStyle}>{summary.expenseCount} registros</div>
-                </div>
-                <div className="card" style={cardStyle}>
-                  <div style={cardLabelStyle}>Neto</div>
-                  <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
-                </div>
+                {showIncomeCard && (
+                  <div className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>Ingresos</div>
+                    <div style={{ ...cardValueStyle, color: "var(--income)" }}>{formatCLP(summary.incomeTotal)}</div>
+                    <div style={cardSubStyle}>{summary.incomeCount} registros</div>
+                  </div>
+                )}
+                {showExpenseCard && (
+                  <div className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>Gastos</div>
+                    <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.expenseTotal)}</div>
+                    <div style={cardSubStyle}>{summary.expenseCount} registros</div>
+                  </div>
+                )}
+                {showNetCard && (
+                  <div className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>Neto</div>
+                    <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
+                  </div>
+                )}
               </div>
             </>
           )}
