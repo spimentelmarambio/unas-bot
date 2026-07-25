@@ -20,11 +20,17 @@ export function ChatPanel({ month }: Props) {
     startTransition(async () => {
       try {
         const response = await askDashboardQuestion(asked, month);
-        setHistory((prev) => [...prev, { question: asked, answer: response }]);
+        setHistory((prev) => {
+          const updated = [...prev, { question: asked, answer: response }];
+          return updated.length > 50 ? updated.slice(-50) : updated;
+        });
         setQuestion("");
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
-        setHistory((prev) => [...prev, { question: asked, answer: `Error: ${errorMsg}` }]);
+        setHistory((prev) => {
+          const updated = [...prev, { question: asked, answer: `Error: ${errorMsg}` }];
+          return updated.length > 50 ? updated.slice(-50) : updated;
+        });
       }
     });
   };

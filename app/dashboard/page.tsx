@@ -387,6 +387,11 @@ export default async function DashboardPage({ searchParams }: Props) {
               </tbody>
             </table>
           </div>
+          {transactions.length === 200 && (
+            <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "1rem" }}>
+              Mostrando 200 transacciones recientes. Usa los filtros para ver datos más específicos.
+            </p>
+          )}
         </>
       )}
 
