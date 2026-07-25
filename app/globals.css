@@ -224,6 +224,27 @@ table.pretty tbody tr:hover {
     min-height: 44px !important;
   }
 
+  .filter-form > div:first-child {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
+
+  .filter-form > div:first-child > a {
+    width: 100% !important;
+    padding: 0.7rem !important;
+    min-height: 44px !important;
+    font-size: 0.95rem !important;
+  }
+
+  .filter-form > div:first-child > span {
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1rem !important;
+  }
+
   .page-header-row {
     flex-direction: column !important;
     align-items: stretch !important;
