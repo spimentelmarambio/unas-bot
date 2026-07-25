@@ -189,28 +189,39 @@ table.pretty tbody tr:hover {
   .filter-form {
     flex-direction: column !important;
     align-items: stretch !important;
-    padding: 0.8rem !important;
-    gap: 0.7rem !important;
+    padding: 1rem !important;
+    gap: 1rem !important;
   }
 
   .filter-form > div {
     width: 100% !important;
     justify-content: center !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
   }
 
   .filter-form label {
     width: 100% !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
   }
 
   .filter-form select,
   .filter-form .input {
     width: 100% !important;
+    padding: 0.7rem !important;
+    font-size: 1rem !important;
+    min-height: 44px !important;
   }
 
   .filter-form button,
   .filter-form a {
     width: 100% !important;
     text-align: center !important;
+    padding: 0.8rem !important;
+    font-size: 0.95rem !important;
+    min-height: 44px !important;
   }
 
   .page-header-row {
