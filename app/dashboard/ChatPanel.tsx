@@ -56,11 +56,13 @@ export function ChatPanel({ month }: Props) {
               <div
                 style={{
                   padding: "1rem",
-                  backgroundColor: "var(--pink-bg-2)",
+                  backgroundColor: exchange.answer.startsWith("Error:") ? "rgba(239, 68, 68, 0.1)" : "var(--pink-bg-2)",
                   borderRadius: "0.5rem",
                   fontSize: "0.9rem",
-                  color: "var(--text)",
+                  color: exchange.answer.startsWith("Error:") ? "#ef4444" : "var(--text)",
                   lineHeight: 1.5,
+                  borderLeft: exchange.answer.startsWith("Error:") ? "3px solid #ef4444" : "none",
+                  paddingLeft: exchange.answer.startsWith("Error:") ? "0.7rem" : "1rem",
                 }}
               >
                 {exchange.answer}

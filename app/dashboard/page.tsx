@@ -434,7 +434,9 @@ export default async function DashboardPage({ searchParams }: Props) {
                   return filtered.length === 0 ? (
                     <tr>
                       <td colSpan={3} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
-                        {hasServiceFilter ? "No hay citas con este filtro" : "No hay citas"}
+                        {hasServiceFilter
+                          ? "No hay citas con este filtro"
+                          : "No hay citas este mes. Se sincronizan automáticamente desde tu calendario de Bookly."}
                       </td>
                     </tr>
                   ) : (
