@@ -212,7 +212,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
           {appointmentStats && (
             <>
-              <h2 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)", textAlign: "center" }}>📊 Indicadores de Citas</h2>
+              <h1 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)", textAlign: "center" }}>📊 Indicadores de Citas</h1>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.8rem", marginBottom: "2rem" }} className="kpi-grid">
                 <div className="card" style={cardStyle}>
                   <div style={cardLabelStyle}>Este mes</div>
@@ -309,7 +309,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       {section === "transacciones" && (
         <>
           <div className="page-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-            <h2 style={{ fontSize: "1.6rem", margin: "0", color: "var(--text)", fontWeight: 700 }}>Transacciones</h2>
+            <h1 style={{ fontSize: "1.6rem", margin: "0", color: "var(--text)", fontWeight: 700 }}>Transacciones</h1>
             <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>← Anterior</a>
@@ -415,7 +415,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             {params.service && params.service !== "ALL" && <a href={clearFiltersHref("citas")} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
-          <h2 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h2>
+          <h1 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h1>
           <div className="card" style={{ overflowX: "auto" }}>
             <table className="pretty">
               <thead>

@@ -13,7 +13,7 @@ export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
 
 const LogIncomeSchema = z.object({
   intent: z.literal("log_income"),
-  amount: z.number(),
+  amount: z.number().positive("El monto debe ser mayor a cero"),
   serviceType: z.enum(SERVICE_TYPES),
   clientName: z.string().optional(),
   // ISO date (YYYY-MM-DD), only set if the message names a specific past
@@ -24,7 +24,7 @@ const LogIncomeSchema = z.object({
 
 const LogExpenseSchema = z.object({
   intent: z.literal("log_expense"),
-  amount: z.number(),
+  amount: z.number().positive("El monto debe ser mayor a cero"),
   description: z.string(),
   date: z.string().optional(),
   note: z.string().optional(),
