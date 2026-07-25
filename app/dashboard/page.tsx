@@ -194,7 +194,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
               <span style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
               <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
-              {month !== currentMonth && <a href={monthHref(currentMonth)} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
+              {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
             </div>
             <MonthSelect defaultValue={month} options={monthOptions(month)} />
             <TypeServiceFilter
@@ -203,7 +203,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               serviceOptions={SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))}
             />
             <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
-            {hasActiveFilters && <a href={clearFiltersHref("resumen")} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
+            {hasActiveFilters && <a href={clearFiltersHref("resumen")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
           {appointmentStats && (
@@ -311,7 +311,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                 <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>← Anterior</a>
                 <span style={{ minWidth: "120px", textAlign: "center", fontWeight: 600 }}>{monthLabel(month)}</span>
                 <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>Siguiente →</a>
-                {month !== currentMonth && <a href={monthHref(currentMonth)} className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", textDecoration: "none" }}>Hoy</a>}
+                {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", textDecoration: "none" }}>Hoy</a>}
               </div>
             </div>
           </div>
@@ -384,7 +384,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
               <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
-              {month !== currentMonth && <a href={monthHref(currentMonth)} className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
+              {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
             </div>
             <MonthSelect defaultValue={month} options={monthOptions(month)} />
             <label style={labelStyle}>
