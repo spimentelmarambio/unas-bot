@@ -67,11 +67,15 @@ export function matchAppointmentCategory(title: string, description: string): st
   return findCategory(primary) ?? findCategory(`${title} ${description}`);
 }
 
+function daysInMonth(month: string): number {
+  const [year, monthIndex] = month.split("-").map(Number);
+  return new Date(Date.UTC(year, monthIndex, 0)).getUTCDate();
+}
+
 function daysElapsedInMonth(month: string): number {
   const now = new Date();
   if (month !== santiagoMonthString(now)) {
-    const [year, monthIndex] = month.split("-").map(Number);
-    return new Date(Date.UTC(year, monthIndex, 0)).getUTCDate();
+    return daysInMonth(month);
   }
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/Santiago",
