@@ -123,7 +123,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         flexDirection: "column",
       }} className="sidebar dashboard-sidebar">
         <div style={{ marginBottom: "1.5rem", paddingLeft: "0.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", margin: "0", color: "var(--text)", fontWeight: 600 }}>💅 MartiNails</h2>
+          <h2 style={{ fontSize: "0.95rem", margin: "0", color: "var(--text)", fontWeight: 600 }}><span aria-hidden="true">💅</span> MartiNails</h2>
         </div>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: "0.2rem", flex: 1 }}>
@@ -149,7 +149,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                 transition: "all 0.2s",
               }}
             >
-              <span style={{ fontSize: "1rem" }}>{item.icon}</span>
+              <span style={{ fontSize: "1rem" }} aria-hidden="true">{item.icon}</span>
               {item.label}
             </a>
           ))}
@@ -208,7 +208,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
           {appointmentStats && (
             <>
-              <h1 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)", textAlign: "center" }}>📊 Indicadores de Citas</h1>
+              <h1 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)", textAlign: "center" }}><span aria-hidden="true">📊</span> Indicadores de Citas</h1>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.8rem", marginBottom: "2rem" }} className="kpi-grid">
                 <div className="card" style={cardStyle}>
                   <div style={cardLabelStyle}>Este mes</div>
@@ -246,7 +246,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
               {appointmentStats.monthlySeries.length > 0 && (
                 <>
-                  <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}>📈 Evolución mensual</h3>
+                  <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">📈</span> Evolución mensual</h3>
                   <div className="card" style={{ padding: "1.5rem", marginBottom: "2rem", overflowX: "auto" }}>
                     <MonthlyBarChart series={appointmentStats.monthlySeries} currentMonth={month} />
                   </div>
@@ -255,7 +255,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
               {appointmentStats.serviceBreakdown.length > 0 && (
                 <>
-                  <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}>💅 Servicios este mes</h3>
+                  <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💅</span> Servicios este mes</h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
                     {appointmentStats.serviceBreakdown.map((service) => (
                       <div key={service.label} className="card" style={cardStyle}>
@@ -267,7 +267,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                 </>
               )}
 
-              <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}>💵 Ingresos & Gastos</h3>
+              <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💵</span> Ingresos & Gastos</h3>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
                 {showIncomeCard && (
                   <div className="card" style={cardStyle}>
