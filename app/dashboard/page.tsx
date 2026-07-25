@@ -157,30 +157,26 @@ export default async function DashboardPage({ searchParams }: Props) {
 
         <div style={{ borderTop: "1px solid var(--border)", paddingTop: "0.8rem", marginTop: "1rem" }}>
           <nav style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-            {[
-              { id: "chat", label: "Chat IA", icon: "💬" },
-            ].map((item) => (
-              <a
-                key={item.id}
-                href={sectionHref("resumen")}
-                style={{
-                  padding: "0.6rem 0.8rem",
-                  borderRadius: "8px",
-                  backgroundColor: "transparent",
-                  color: "var(--text)",
-                  fontWeight: 400,
-                  fontSize: "0.85rem",
-                  textDecoration: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.6rem",
-                  transition: "all 0.2s",
-                }}
-              >
-                <span style={{ fontSize: "1rem" }}>{item.icon}</span>
-                {item.label}
-              </a>
-            ))}
+            <a
+              href={sectionHref("resumen")}
+              aria-label="Chat IA - disponible en la sección Resumen"
+              style={{
+                padding: "0.6rem 0.8rem",
+                borderRadius: "8px",
+                backgroundColor: "transparent",
+                color: "var(--text)",
+                fontWeight: 400,
+                fontSize: "0.85rem",
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                transition: "all 0.2s",
+              }}
+            >
+              <span style={{ fontSize: "1rem" }} aria-hidden="true">💬</span>
+              Chat IA
+            </a>
           </nav>
         </div>
       </aside>
@@ -320,22 +316,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             </div>
           </div>
 
-          <div className="toolbar-row" style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", gap: "0.8rem", flex: 1 }}>
-              <div style={{ flex: 1, position: "relative" }}>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Buscar transacciones..."
-                  style={{ paddingLeft: "2.2rem", width: "100%", opacity: 0.6, cursor: "not-allowed" }}
-                  disabled
-                  title="Búsqueda disponible próximamente"
-                />
-                <span style={{ position: "absolute", left: "0.7rem", top: "50%", transform: "translateY(-50%)" }}>🔍</span>
-              </div>
-            </div>
-            <button className="btn" style={{ padding: "0.6rem 1.2rem", backgroundColor: "#2f9e63", fontWeight: 600, opacity: 0.6, cursor: "not-allowed" }} disabled title="Disponible próximamente">+ Nueva transacción</button>
-          </div>
+          {/* Future features hidden for now */}
 
           <form method="get" className="card filter-form" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
             <input type="hidden" name="section" value="transacciones" />

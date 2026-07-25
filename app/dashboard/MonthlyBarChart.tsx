@@ -22,7 +22,13 @@ function barPath(x: number, y: number, width: number, height: number, radius: nu
 }
 
 export function MonthlyBarChart({ series, currentMonth }: Props) {
-  if (series.length === 0) return null;
+  if (series.length === 0) {
+    return (
+      <div style={{ textAlign: "center", color: "var(--muted)", padding: "2rem", fontSize: "0.9rem" }}>
+        No hay datos de citas disponibles aún.
+      </div>
+    );
+  }
 
   const barWidth = 32;
   const gap = 12;

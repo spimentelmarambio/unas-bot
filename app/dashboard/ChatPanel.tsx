@@ -50,7 +50,7 @@ export function ChatPanel({ month }: Props) {
           disabled={isPending}
           style={{ flex: 1 }}
         />
-        <button className="btn" onClick={handleAsk} disabled={isPending || !question.trim()}>
+        <button className="btn" onClick={handleAsk} disabled={isPending || !question.trim()} aria-label="Enviar pregunta a la IA">
           {isPending ? "…" : "Preguntar"}
         </button>
       </div>
