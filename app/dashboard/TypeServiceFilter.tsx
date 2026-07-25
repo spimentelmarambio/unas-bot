@@ -19,10 +19,11 @@ type Props = {
 // A plain <select disabled={params.type === "EXPENSE"}> only reflects the
 // filter that was already submitted - picking "Gastos" here without
 // submitting first left "Servicio" looking selectable even though the
-// server ignores it once type is EXPENSE. Tracking "type" client-side keeps
-// the two in sync as the user picks, before they hit "Filtrar".
+// server ignores it once type is EXPENSE. Tracking both type and service
+// client-side keeps them in sync as the user picks, before they hit "Filtrar".
 export function TypeServiceFilter({ defaultType, defaultService, serviceOptions }: Props) {
   const [type, setType] = useState(defaultType);
+  const [service, setService] = useState(defaultService);
 
   return (
     <>
@@ -36,7 +37,7 @@ export function TypeServiceFilter({ defaultType, defaultService, serviceOptions 
       </label>
       <label style={labelStyle}>
         Servicio
-        <select name="service" defaultValue={defaultService} className="input" disabled={type === "EXPENSE"}>
+        <select name="service" value={service} onChange={(e) => setService(e.target.value)} className="input" disabled={type === "EXPENSE"}>
           <option value="ALL">Todos</option>
           {serviceOptions.map((s) => (
             <option key={s.value} value={s.value}>{s.label}</option>
