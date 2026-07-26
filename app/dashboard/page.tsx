@@ -1,6 +1,7 @@
 import { getSummary, getTransactions, monthRange } from "@/lib/transactions";
 import { getAppointmentStats, fetchAppointments, matchAppointmentCategory, buildServiceBreakdown, APPOINTMENT_CATEGORY_LABELS } from "@/lib/calendar";
 import { santiagoMonthString, shiftMonthString } from "@/lib/dates";
+import { formatCLP, formatDate, formatTime } from "@/lib/format";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
 import type { NailTransactionType } from "@/lib/generated/prisma/enums";
 import { deleteTransactionAction } from "./actions";
@@ -10,24 +11,9 @@ import { ChatPanel } from "./ChatPanel";
 import { TypeServiceFilter } from "./TypeServiceFilter";
 import { AppointmentServiceFilter } from "./AppointmentServiceFilter";
 import { DateRangeFilter } from "./DateRangeFilter";
+import { AppointmentsTable } from "./AppointmentsTable";
 
 export const dynamic = "force-dynamic";
-
-function formatCLP(amount: number): string {
-  return amount.toLocaleString("es-CL", {
-    style: "currency",
-    currency: "CLP",
-    maximumFractionDigits: 0,
-  });
-}
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("es-CL", { timeZone: "UTC", day: "2-digit", month: "short", year: "numeric" });
-}
-
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString("es-CL", { timeZone: "UTC", hour: "2-digit", minute: "2-digit" });
-}
 
 function monthLabel(month: string): string {
   const [year, monthIndex] = month.split("-").map(Number);
@@ -414,42 +400,25 @@ export default async function DashboardPage({ searchParams }: Props) {
 
           <h1 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h1>
           <div className="card" style={{ overflowX: "auto" }}>
-            <table className="pretty">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Hora</th>
-                  <th>Servicio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  const hasServiceFilter = Boolean(params.service && params.service !== "ALL");
-                  const filtered = appointmentsInRange
-                    .filter((apt) => !hasServiceFilter || (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === params.service)
-                    .sort((a, b) => b.start.getTime() - a.start.getTime());
-                  return filtered.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
-                        {hasServiceFilter
-                          ? "No hay citas con este filtro"
-                          : "No hay citas este mes. Se sincronizan automáticamente desde tu calendario de Bookly."}
-                      </td>
-                    </tr>
-                  ) : (
-                    filtered.map((apt, idx) => (
-                      <tr key={`${apt.start.getTime()}-${idx}`}>
-                        <td>{formatDate(apt.start)}</td>
-                        <td>{formatTime(apt.start)}</td>
-                        <td style={{ fontSize: "0.85rem" }} title={apt.title || undefined}>
-                          {matchAppointmentCategory(apt.title, apt.description) ?? (apt.title || "Sin nombre")}
-                        </td>
-                      </tr>
-                    ))
-                  );
-                })()}
-              </tbody>
-            </table>
+            <AppointmentsTable
+              rows={(() => {
+                const hasServiceFilter = Boolean(params.service && params.service !== "ALL");
+                return appointmentsInRange
+                  .filter((apt) => !hasServiceFilter || (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === params.service)
+                  .sort((a, b) => b.start.getTime() - a.start.getTime())
+                  .map((apt) => ({
+                    title: apt.title,
+                    description: apt.description,
+                    start: apt.start,
+                    category: matchAppointmentCategory(apt.title, apt.description) ?? (apt.title || "Sin nombre"),
+                  }));
+              })()}
+              emptyMessage={
+                params.service && params.service !== "ALL"
+                  ? "No hay citas con este filtro"
+                  : "No hay citas este mes. Se sincronizan automáticamente desde tu calendario de Bookly."
+              }
+            />
           </div>
         </>
       )}

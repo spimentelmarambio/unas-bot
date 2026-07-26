@@ -358,6 +358,13 @@ table.pretty tbody tr:hover {
     flex: none !important;
   }
 
+  form.filter-form--compact button.date-range-apply {
+    width: auto !important;
+    flex: 1 !important;
+    min-height: 36px !important;
+    padding: 0.5rem !important;
+  }
+
   form.filter-form--compact button.date-range-clear {
     width: auto !important;
     min-height: auto !important;
