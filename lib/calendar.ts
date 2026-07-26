@@ -1,4 +1,5 @@
 import * as ical from "node-ical";
+import { unstable_cache } from "next/cache";
 import { santiagoMonthString, shiftMonthString } from "./dates";
 
 export type Appointment = {
@@ -20,21 +21,40 @@ function isPersonalBlock(title: string, description: string): boolean {
   return PERSONAL_BLOCK_KEYWORDS.some((k) => text.includes(k));
 }
 
-export async function fetchAppointments(): Promise<Appointment[]> {
-  const url = process.env.BOOKLY_CALENDAR_ICS_URL;
-  if (!url) return [];
+// `start` is kept as an ISO string in the cache layer: Next's data cache
+// serializes entries, so a real Date would come back as a string on a cache
+// hit and blow up every `.getTime()` downstream. Revived once on the way out.
+type CachedAppointment = { title: string; description: string; start: string };
 
+async function fetchAppointmentsUncached(url: string): Promise<CachedAppointment[]> {
   const data = await ical.async.fromURL(url);
-  const appointments: Appointment[] = [];
+  const appointments: CachedAppointment[] = [];
   for (const entry of Object.values(data)) {
     if (entry && entry.type === "VEVENT") {
       const title = String(entry.summary ?? "");
       const description = String(entry.description ?? "");
       if (isPersonalBlock(title, description)) continue;
-      appointments.push({ title, description, start: new Date(entry.start) });
+      appointments.push({ title, description, start: new Date(entry.start).toISOString() });
     }
   }
-  return appointments.sort((a, b) => a.start.getTime() - b.start.getTime());
+  return appointments.sort((a, b) => a.start.localeCompare(b.start));
+}
+
+// The Bookly ICS feed is ~330KB and takes 4-7s to fetch, and it was being
+// re-fetched on every single dashboard render - that request *was* the page
+// load time. Appointments only change when a booking is made, so a few
+// minutes of staleness is a fine trade for a near-instant dashboard.
+const getCachedAppointments = unstable_cache(fetchAppointmentsUncached, ["bookly-appointments"], {
+  revalidate: 300,
+  tags: ["appointments"],
+});
+
+export async function fetchAppointments(): Promise<Appointment[]> {
+  const url = process.env.BOOKLY_CALENDAR_ICS_URL;
+  if (!url) return [];
+
+  const cached = await getCachedAppointments(url);
+  return cached.map((a) => ({ ...a, start: new Date(a.start) }));
 }
 
 // Categorización de citas para el desglose del dashboard - independiente de

@@ -25,6 +25,18 @@ function monthLabel(month: string): string {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+// Compact "dic 2025" for the KPI cards, where the full "Diciembre de 2025"
+// would overflow the tile at the large value type size.
+function monthLabelShort(month: string): string {
+  const [year, monthIndex] = month.split("-").map(Number);
+  const label = new Date(Date.UTC(year, monthIndex - 1, 1)).toLocaleDateString("es-CL", {
+    timeZone: "UTC",
+    month: "short",
+    year: "numeric",
+  });
+  return label.replace(".", "").replace(" de ", " ");
+}
+
 function isServiceType(value: string | undefined): value is ServiceType {
   return SERVICE_TYPES.includes(value as ServiceType);
 }
@@ -146,8 +158,8 @@ export default async function DashboardPage({ searchParams }: Props) {
         display: "flex",
         flexDirection: "column",
       }} className="sidebar dashboard-sidebar">
-        <div style={{ marginBottom: "1.5rem", paddingLeft: "0.5rem" }}>
-          <h2 style={{ fontSize: "1rem", margin: "0", color: "var(--accent)", fontWeight: 700 }}>MartiNails</h2>
+        <div style={{ marginBottom: "1.75rem", paddingLeft: "0.5rem" }}>
+          <h1 style={{ fontSize: "1.05rem", margin: "0", color: "var(--accent)", fontWeight: 700, letterSpacing: "-0.01em" }}>MartiNails</h1>
         </div>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: "0.3rem", flex: 1 }}>
@@ -229,7 +241,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
           {resumenServiceBreakdown.length > 0 && (
             <>
-              <h3 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💅</span> Servicios este mes</h3>
+              <h2 className="section-title">Servicios este mes</h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
                 {resumenServiceBreakdown.map((service) => (
                   <div key={service.label} className="card" style={cardStyle}>
@@ -241,8 +253,11 @@ export default async function DashboardPage({ searchParams }: Props) {
             </>
           )}
 
-          <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💵</span> Ingresos & Gastos</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
+          <h2 className="section-title">Ingresos & Gastos</h2>
+          {/* Fixed 2 columns rather than auto-fit: with auto-fit the two
+              money tiles each landed in one of ~5 generated columns and
+              looked cramped next to the full-width Ganancia below them. */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.9rem", marginBottom: "2rem" }}>
             {showIncomeCard && (
               <div className="card" style={cardStyle}>
                 <div style={cardLabelStyle}>Ingresos</div>
@@ -274,14 +289,14 @@ export default async function DashboardPage({ searchParams }: Props) {
             <>
               {appointmentStats.monthlySeries.length > 0 && (
                 <>
-                  <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">📈</span> Evolución mensual</h3>
+                  <h2 className="section-title">Evolución mensual</h2>
                   <div className="card" style={{ padding: "1.5rem", marginBottom: "2rem" }}>
                     <MonthlyBarChart series={appointmentStats.monthlySeries} currentMonth={month} />
                   </div>
                 </>
               )}
 
-              <h1 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)", textAlign: "center" }}><span aria-hidden="true">📊</span> Indicadores de Citas</h1>
+              <h2 className="section-title">Indicadores de citas</h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.8rem", marginBottom: "2rem" }} className="kpi-grid">
                 <div className="card" style={cardStyle}>
                   <div style={cardLabelStyle}>Este mes</div>
@@ -303,7 +318,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                 {appointmentStats.busiestMonth && (
                   <div className="card" style={cardStyle}>
                     <div style={cardLabelStyle}>Mes más movido</div>
-                    <div style={cardValueStyle}>{appointmentStats.busiestMonth.month}</div>
+                    <div style={cardValueStyle}>{monthLabelShort(appointmentStats.busiestMonth.month)}</div>
                     <div style={cardSubStyle}>{appointmentStats.busiestMonth.count} citas</div>
                   </div>
                 )}
@@ -413,7 +428,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             {((params.service && params.service !== "ALL") || hasCustomRange) && <a href={clearFiltersHref("citas")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
-          <h1 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h1>
+          <h2 className="section-title">Listado de citas</h2>
           <div className="card" style={{ overflowX: "auto" }}>
             <AppointmentsTable
               rows={(() => {
@@ -447,13 +462,13 @@ export default async function DashboardPage({ searchParams }: Props) {
 
 const cardStyle: React.CSSProperties = {
   flex: "1 1 120px",
-  padding: "0.9rem 0.7rem",
+  padding: "1.1rem 0.8rem",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   textAlign: "center",
 };
 
-const cardLabelStyle: React.CSSProperties = { fontSize: "0.8rem", color: "var(--muted)", marginBottom: "0.4rem" };
-const cardValueStyle: React.CSSProperties = { fontSize: "1.8rem", fontWeight: 700, lineHeight: 1 };
+const cardLabelStyle: React.CSSProperties = { fontSize: "0.78rem", color: "var(--muted)", marginBottom: "0.5rem" };
+const cardValueStyle: React.CSSProperties = { fontSize: "1.8rem", fontWeight: 700, lineHeight: 1, letterSpacing: "-0.02em" };
 const cardSubStyle: React.CSSProperties = { fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.3rem" };
