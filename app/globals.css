@@ -336,9 +336,9 @@ table.pretty tbody tr:hover {
   }
 
   form.filter-form--compact button.date-range-toggle {
-    width: 36px !important;
-    min-height: 36px !important;
-    padding: 0 !important;
+    width: auto !important;
+    min-height: 32px !important;
+    padding: 0.3rem 0.6rem !important;
     flex: none !important;
   }
 

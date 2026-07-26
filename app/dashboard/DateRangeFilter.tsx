@@ -31,28 +31,44 @@ export function DateRangeFilter({ defaultFrom, defaultTo }: Props) {
         aria-label={hasRange ? "Cambiar rango de fechas personalizado" : "Filtrar por rango de fechas personalizado"}
         aria-pressed={open}
         style={{
-          width: "36px",
-          height: "36px",
-          padding: 0,
           display: "inline-flex",
           alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1rem",
+          gap: "0.35rem",
+          padding: "0.3rem 0.6rem",
+          fontSize: "0.75rem",
+          fontWeight: 500,
+          whiteSpace: "nowrap",
           background: hasRange ? "var(--accent)" : "transparent",
-          color: hasRange ? "#fff" : "var(--accent-dark)",
+          color: hasRange ? "#fff" : "var(--muted)",
           border: hasRange ? "none" : "1px solid var(--border)",
-          borderRadius: "50%",
+          borderRadius: "6px",
           cursor: "pointer",
         }}
       >
-        <span aria-hidden="true">📅</span>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        Fecha
       </button>
 
       {open && (
         <>
           <div
             onClick={() => setOpen(false)}
-            style={{ position: "fixed", inset: 0, zIndex: 90 }}
+            style={{ position: "fixed", inset: 0, zIndex: 90, background: "rgba(0, 0, 0, 0.25)" }}
           />
           <div
             onClick={(e) => e.stopPropagation()}
