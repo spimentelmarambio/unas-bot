@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatDate, formatTime } from "@/lib/format";
 
 export type AppointmentRow = {
@@ -20,6 +20,15 @@ type Props = {
 // modal instead of cramming everything into the row.
 export function AppointmentsTable({ rows, emptyMessage }: Props) {
   const [selected, setSelected] = useState<AppointmentRow | null>(null);
+
+  useEffect(() => {
+    if (!selected) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setSelected(null);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selected]);
 
   return (
     <>

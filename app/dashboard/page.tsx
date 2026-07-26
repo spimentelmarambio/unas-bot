@@ -1,5 +1,5 @@
 import { getSummary, getTransactions, monthRange } from "@/lib/transactions";
-import { getAppointmentStats, fetchAppointments, matchAppointmentCategory, buildServiceBreakdown, APPOINTMENT_CATEGORY_LABELS } from "@/lib/calendar";
+import { computeAppointmentStats, fetchAppointments, matchAppointmentCategory, buildServiceBreakdown, APPOINTMENT_CATEGORY_LABELS } from "@/lib/calendar";
 import { santiagoMonthString, shiftMonthString } from "@/lib/dates";
 import { formatCLP, formatDate, formatTime } from "@/lib/format";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
@@ -67,12 +67,15 @@ export default async function DashboardPage({ searchParams }: Props) {
     : monthRange(month);
   const hasActiveFilters = Boolean(type || serviceType || hasCustomRange);
 
-  const [summary, transactions, appointmentStats, allAppointments] = await Promise.all([
+  const [summary, transactions, allAppointments] = await Promise.all([
     getSummary({ ...range, type, serviceType }),
     getTransactions({ ...range, type, serviceType }, 200),
-    getAppointmentStats(month),
-    fetchAppointments(),
+    fetchAppointments().catch((error) => {
+      console.error("Error leyendo el calendario de Bookly:", error);
+      return [];
+    }),
   ]);
+  const appointmentStats = computeAppointmentStats(month, allAppointments);
 
   const effectiveType = serviceType ? "INCOME" : type;
   const showIncomeCard = effectiveType !== "EXPENSE";
@@ -212,51 +215,51 @@ export default async function DashboardPage({ searchParams }: Props) {
             {hasActiveFilters && <a href={clearFiltersHref("resumen")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
+          {resumenServiceBreakdown.length > 0 && (
+            <>
+              <h3 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💅</span> Servicios este mes</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
+                {resumenServiceBreakdown.map((service) => (
+                  <div key={service.label} className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>{service.label}</div>
+                    <div style={cardValueStyle}>{service.count}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💵</span> Ingresos & Gastos</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
+            {showIncomeCard && (
+              <div className="card" style={cardStyle}>
+                <div style={cardLabelStyle}>Ingresos</div>
+                <div style={{ ...cardValueStyle, color: "var(--income)" }}>{formatCLP(summary.incomeTotal)}</div>
+                <div style={cardSubStyle}>{summary.incomeCount} registros</div>
+              </div>
+            )}
+            {showExpenseCard && (
+              <div className="card" style={cardStyle}>
+                <div style={cardLabelStyle}>Gastos</div>
+                <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.expenseTotal)}</div>
+                <div style={cardSubStyle}>{summary.expenseCount} registros</div>
+              </div>
+            )}
+            {showNetCard && (
+              <div className="card" style={{ ...cardStyle, gridColumn: "1 / -1" }}>
+                <div style={cardLabelStyle}>Ganancia</div>
+                <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
+              </div>
+            )}
+          </div>
+          {summary.incomeCount === 0 && summary.expenseCount === 0 && !hasActiveFilters && (
+            <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "-1rem", marginBottom: "2rem" }}>
+              Aún no hay ingresos ni gastos registrados este mes. Escríbele a tu bot de WhatsApp para anotarlos (ej: &quot;hice un gel x de 20000&quot;).
+            </p>
+          )}
+
           {appointmentStats && (
             <>
-              {resumenServiceBreakdown.length > 0 && (
-                <>
-                  <h3 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💅</span> Servicios este mes</h3>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
-                    {resumenServiceBreakdown.map((service) => (
-                      <div key={service.label} className="card" style={cardStyle}>
-                        <div style={cardLabelStyle}>{service.label}</div>
-                        <div style={cardValueStyle}>{service.count}</div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💵</span> Ingresos & Gastos</h3>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
-                {showIncomeCard && (
-                  <div className="card" style={cardStyle}>
-                    <div style={cardLabelStyle}>Ingresos</div>
-                    <div style={{ ...cardValueStyle, color: "var(--income)" }}>{formatCLP(summary.incomeTotal)}</div>
-                    <div style={cardSubStyle}>{summary.incomeCount} registros</div>
-                  </div>
-                )}
-                {showExpenseCard && (
-                  <div className="card" style={cardStyle}>
-                    <div style={cardLabelStyle}>Gastos</div>
-                    <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.expenseTotal)}</div>
-                    <div style={cardSubStyle}>{summary.expenseCount} registros</div>
-                  </div>
-                )}
-                {showNetCard && (
-                  <div className="card" style={{ ...cardStyle, gridColumn: "1 / -1" }}>
-                    <div style={cardLabelStyle}>Ganancia</div>
-                    <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
-                  </div>
-                )}
-              </div>
-              {summary.incomeCount === 0 && summary.expenseCount === 0 && !hasActiveFilters && (
-                <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "-1rem", marginBottom: "2rem" }}>
-                  Aún no hay ingresos ni gastos registrados este mes. Escríbele a tu bot de WhatsApp para anotarlos (ej: &quot;hice un gel x de 20000&quot;).
-                </p>
-              )}
-
               {appointmentStats.monthlySeries.length > 0 && (
                 <>
                   <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">📈</span> Evolución mensual</h3>
@@ -416,7 +419,9 @@ export default async function DashboardPage({ searchParams }: Props) {
               emptyMessage={
                 params.service && params.service !== "ALL"
                   ? "No hay citas con este filtro"
-                  : "No hay citas este mes. Se sincronizan automáticamente desde tu calendario de Bookly."
+                  : hasCustomRange
+                    ? "No hay citas en este rango de fechas."
+                    : "No hay citas este mes. Se sincronizan automáticamente desde tu calendario de Bookly."
               }
             />
           </div>

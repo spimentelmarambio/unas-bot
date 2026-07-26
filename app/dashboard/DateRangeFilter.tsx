@@ -20,7 +20,10 @@ type Props = {
 // or on clicking the backdrop.
 export function DateRangeFilter({ defaultFrom, defaultTo }: Props) {
   const [open, setOpen] = useState(false);
+  const [fromValue, setFromValue] = useState(defaultFrom ?? "");
+  const [toValue, setToValue] = useState(defaultTo ?? "");
   const hasRange = Boolean(defaultFrom || defaultTo);
+  const isInverted = Boolean(fromValue && toValue && fromValue > toValue);
 
   return (
     <div style={{ position: "relative", display: "inline-flex" }}>
@@ -65,73 +68,106 @@ export function DateRangeFilter({ defaultFrom, defaultTo }: Props) {
       </button>
 
       {open && (
-        <>
-          <div
-            onClick={() => setOpen(false)}
-            style={{ position: "fixed", inset: 0, zIndex: 90, background: "rgba(0, 0, 0, 0.25)" }}
+        <div
+          onClick={() => setOpen(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 90, background: "rgba(0, 0, 0, 0.25)" }}
+        />
+      )}
+      {/* Always mounted (just hidden via CSS) so "from"/"to" still submit
+          with the form when some other filter auto-submits while this
+          popup is collapsed - conditionally rendering it unmounted the
+          inputs and silently dropped the active range. */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="card"
+        style={{
+          position: "absolute",
+          top: "calc(100% + 8px)",
+          right: 0,
+          zIndex: 100,
+          padding: "1rem",
+          display: open ? "flex" : "none",
+          flexDirection: "column",
+          gap: "0.75rem",
+          width: "230px",
+          maxWidth: "calc(100vw - 2rem)",
+          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.18)",
+        }}
+      >
+        <label style={labelStyle}>
+          Desde
+          <input
+            type="date"
+            name="from"
+            defaultValue={defaultFrom ?? ""}
+            className="input"
+            onChange={(e) => setFromValue(e.target.value)}
           />
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="card"
+        </label>
+        <label style={labelStyle}>
+          Hasta
+          <input
+            type="date"
+            name="to"
+            defaultValue={defaultTo ?? ""}
+            min={fromValue || undefined}
+            className="input"
+            onChange={(e) => setToValue(e.target.value)}
+          />
+        </label>
+        {isInverted && (
+          <div style={{ fontSize: "0.7rem", color: "var(--expense)" }}>
+            &quot;Hasta&quot; debe ser posterior a &quot;Desde&quot;.
+          </div>
+        )}
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+          <button
+            type="submit"
+            className="btn date-range-apply"
+            disabled={isInverted}
             style={{
-              position: "absolute",
-              top: "calc(100% + 8px)",
-              right: 0,
-              zIndex: 100,
-              padding: "1rem",
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.75rem",
-              width: "230px",
-              maxWidth: "calc(100vw - 2rem)",
-              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.18)",
+              flex: 1,
+              fontSize: "0.85rem",
+              padding: "0.5rem",
+              opacity: isInverted ? 0.5 : 1,
+              cursor: isInverted ? "not-allowed" : "pointer",
             }}
           >
-            <label style={labelStyle}>
-              Desde
-              <input type="date" name="from" defaultValue={defaultFrom ?? ""} className="input" />
-            </label>
-            <label style={labelStyle}>
-              Hasta
-              <input type="date" name="to" defaultValue={defaultTo ?? ""} className="input" />
-            </label>
-            <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
-              <button type="submit" className="btn date-range-apply" style={{ flex: 1, fontSize: "0.85rem", padding: "0.5rem" }}>
-                Aplicar
-              </button>
-              {hasRange && (
-                <button
-                  type="button"
-                  className="date-range-clear"
-                  onClick={(e) => {
-                    const form = e.currentTarget.form;
-                    if (!form) return;
-                    const fromInput = form.elements.namedItem("from") as HTMLInputElement | null;
-                    const toInput = form.elements.namedItem("to") as HTMLInputElement | null;
-                    if (fromInput) fromInput.value = "";
-                    if (toInput) toInput.value = "";
-                    setOpen(false);
-                    form.requestSubmit();
-                  }}
-                  aria-label="Quitar rango de fechas personalizado"
-                  style={{
-                    fontSize: "0.75rem",
-                    background: "none",
-                    border: "none",
-                    color: "var(--accent-dark)",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                    padding: 0,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Quitar
-                </button>
-              )}
-            </div>
-          </div>
-        </>
-      )}
+            Aplicar
+          </button>
+          {hasRange && (
+            <button
+              type="button"
+              className="date-range-clear"
+              onClick={(e) => {
+                const form = e.currentTarget.form;
+                if (!form) return;
+                const fromInput = form.elements.namedItem("from") as HTMLInputElement | null;
+                const toInput = form.elements.namedItem("to") as HTMLInputElement | null;
+                if (fromInput) fromInput.value = "";
+                if (toInput) toInput.value = "";
+                setFromValue("");
+                setToValue("");
+                setOpen(false);
+                form.requestSubmit();
+              }}
+              aria-label="Quitar rango de fechas personalizado"
+              style={{
+                fontSize: "0.75rem",
+                background: "none",
+                border: "none",
+                color: "var(--accent-dark)",
+                cursor: "pointer",
+                textDecoration: "underline",
+                padding: 0,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Quitar
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

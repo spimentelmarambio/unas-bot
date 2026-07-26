@@ -110,16 +110,11 @@ export type AppointmentStats = {
   serviceBreakdown: ServiceCount[];
 };
 
-export async function getAppointmentStats(month: string): Promise<AppointmentStats | null> {
-  if (!process.env.BOOKLY_CALENDAR_ICS_URL) return null;
-
-  let appointments: Appointment[];
-  try {
-    appointments = await fetchAppointments();
-  } catch (error) {
-    console.error("Error leyendo el calendario de Bookly:", error);
-    return null;
-  }
+// Split out from getAppointmentStats() so callers that already fetched the
+// appointment list (like the dashboard page, which also needs it for the
+// custom date-range view) can reuse it instead of hitting the Bookly ICS
+// feed a second time on every page load.
+export function computeAppointmentStats(month: string, appointments: Appointment[]): AppointmentStats | null {
   if (appointments.length === 0) return null;
 
   const countByMonth = new Map<string, number>();
@@ -167,4 +162,19 @@ export async function getAppointmentStats(month: string): Promise<AppointmentSta
     monthlySeries,
     serviceBreakdown,
   };
+}
+
+// Convenience wrapper for callers (like the chat assistant action) that
+// don't already have the appointment list on hand.
+export async function getAppointmentStats(month: string): Promise<AppointmentStats | null> {
+  if (!process.env.BOOKLY_CALENDAR_ICS_URL) return null;
+
+  let appointments: Appointment[];
+  try {
+    appointments = await fetchAppointments();
+  } catch (error) {
+    console.error("Error leyendo el calendario de Bookly:", error);
+    return null;
+  }
+  return computeAppointmentStats(month, appointments);
 }
