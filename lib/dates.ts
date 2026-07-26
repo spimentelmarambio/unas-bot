@@ -33,6 +33,31 @@ export function parseDateOnly(isoDate: string): Date {
   return new Date(`${isoDate}T00:00:00.000Z`);
 }
 
+// The UTC instant of actual midnight in Santiago for a given "YYYY-MM-DD" -
+// NOT the same as parseDateOnly's UTC-midnight stand-in. Needed to filter
+// real timestamps (calendar appointment start times) by Santiago calendar
+// day; Chile sits 3-4 hours behind UTC, so comparing an appointment's real
+// timestamp against parseDateOnly()'s UTC midnight would mis-bucket
+// evening appointments across the day boundary.
+export function santiagoMidnightUtc(isoDate: string): Date {
+  const utcGuess = new Date(`${isoDate}T00:00:00.000Z`);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Santiago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(utcGuess);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  const hour = get("hour") % 24; // Intl can report hour "24" for midnight
+  const santiagoWallClock = Date.UTC(get("year"), get("month") - 1, get("day"), hour, get("minute"), get("second"));
+  const offsetMs = utcGuess.getTime() - santiagoWallClock;
+  return new Date(utcGuess.getTime() + offsetMs);
+}
+
 // "YYYY-MM" for the current Santiago calendar month - used as the default
 // for the dashboard's month picker.
 export function santiagoMonthString(when: Date = new Date()): string {

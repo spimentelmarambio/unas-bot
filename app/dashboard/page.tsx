@@ -1,6 +1,6 @@
 import { getSummary, getTransactions, monthRange } from "@/lib/transactions";
 import { computeAppointmentStats, fetchAppointments, matchAppointmentCategory, buildServiceBreakdown, APPOINTMENT_CATEGORY_LABELS } from "@/lib/calendar";
-import { santiagoMonthString, shiftMonthString } from "@/lib/dates";
+import { santiagoMonthString, shiftMonthString, santiagoMidnightUtc, parseDateOnly } from "@/lib/dates";
 import { formatCLP, formatDate, formatTime } from "@/lib/format";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
 import type { NailTransactionType } from "@/lib/generated/prisma/enums";
@@ -61,8 +61,8 @@ export default async function DashboardPage({ searchParams }: Props) {
   const hasCustomRange = Boolean(customFrom || customTo);
   const range = hasCustomRange
     ? {
-        start: customFrom ? new Date(`${customFrom}T00:00:00.000Z`) : undefined,
-        end: customTo ? new Date(new Date(`${customTo}T00:00:00.000Z`).getTime() + 24 * 60 * 60 * 1000) : undefined,
+        start: customFrom ? parseDateOnly(customFrom) : undefined,
+        end: customTo ? new Date(parseDateOnly(customTo).getTime() + 24 * 60 * 60 * 1000) : undefined,
       }
     : monthRange(month);
   const hasActiveFilters = Boolean(type || serviceType || hasCustomRange);
@@ -82,11 +82,23 @@ export default async function DashboardPage({ searchParams }: Props) {
   const showExpenseCard = effectiveType !== "INCOME";
   const showNetCard = !effectiveType;
 
+  // Appointment start times are real timestamps (not the UTC-midnight
+  // stand-in transactions use), so their range boundaries need actual
+  // Santiago-midnight instants - otherwise evening appointments land on
+  // the wrong side of the day boundary because Chile sits 3-4 hours
+  // behind UTC.
+  const appointmentRange = hasCustomRange
+    ? {
+        start: customFrom ? santiagoMidnightUtc(customFrom) : undefined,
+        end: customTo ? new Date(santiagoMidnightUtc(customTo).getTime() + 24 * 60 * 60 * 1000) : undefined,
+      }
+    : undefined;
+
   // Appointments in the active window - the custom range when set, otherwise the selected month.
   const appointmentsInRange = allAppointments.filter((a) => {
-    if (hasCustomRange) {
-      if (range.start && a.start < range.start) return false;
-      if (range.end && a.start >= range.end) return false;
+    if (appointmentRange) {
+      if (appointmentRange.start && a.start < appointmentRange.start) return false;
+      if (appointmentRange.end && a.start >= appointmentRange.end) return false;
       return true;
     }
     return santiagoMonthString(a.start) === month;
