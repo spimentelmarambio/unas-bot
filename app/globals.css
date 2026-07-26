@@ -350,6 +350,19 @@ table.pretty tbody tr:hover {
     padding: 0.3rem !important;
     min-height: auto !important;
   }
+
+  form.filter-form--compact button.date-range-toggle {
+    width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    flex: none !important;
+  }
+
+  form.filter-form--compact button.date-range-clear {
+    width: auto !important;
+    min-height: auto !important;
+    padding: 0.3rem !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

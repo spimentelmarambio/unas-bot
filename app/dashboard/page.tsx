@@ -1,5 +1,5 @@
 import { getSummary, getTransactions, monthRange } from "@/lib/transactions";
-import { getAppointmentStats, fetchAppointments, matchAppointmentCategory, APPOINTMENT_CATEGORY_LABELS } from "@/lib/calendar";
+import { getAppointmentStats, fetchAppointments, matchAppointmentCategory, buildServiceBreakdown, APPOINTMENT_CATEGORY_LABELS } from "@/lib/calendar";
 import { santiagoMonthString, shiftMonthString } from "@/lib/dates";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
 import type { NailTransactionType } from "@/lib/generated/prisma/enums";
@@ -9,6 +9,7 @@ import { MonthlyBarChart } from "./MonthlyBarChart";
 import { ChatPanel } from "./ChatPanel";
 import { TypeServiceFilter } from "./TypeServiceFilter";
 import { AppointmentServiceFilter } from "./AppointmentServiceFilter";
+import { DateRangeFilter } from "./DateRangeFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -46,8 +47,14 @@ function isTransactionType(value: string | undefined): value is NailTransactionT
   return value === "INCOME" || value === "EXPENSE";
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isIsoDate(value: string | undefined): value is string {
+  return typeof value === "string" && ISO_DATE.test(value);
+}
+
 type Props = {
-  searchParams: Promise<{ month?: string; type?: string; service?: string; section?: string }>;
+  searchParams: Promise<{ month?: string; type?: string; service?: string; section?: string; from?: string; to?: string }>;
 };
 
 export default async function DashboardPage({ searchParams }: Props) {
@@ -55,10 +62,24 @@ export default async function DashboardPage({ searchParams }: Props) {
   const currentMonth = santiagoMonthString();
   const month = params.month ?? currentMonth;
   const section = (params.section ?? "resumen") as "resumen" | "transacciones" | "citas";
-  const range = monthRange(month);
   const type = isTransactionType(params.type) ? params.type : undefined;
   const serviceType = type !== "EXPENSE" && isServiceType(params.service) ? params.service : undefined;
-  const hasActiveFilters = Boolean(type || serviceType);
+
+  // A custom "desde/hasta" range overrides the selected month for anything
+  // that can filter by an arbitrary window (transactions, the appointment
+  // list, this month's service breakdown). Monthly aggregates like the
+  // historical chart and "promedio/mes" don't have a custom-range
+  // equivalent, so those stay keyed off `month` regardless.
+  const customFrom = isIsoDate(params.from) ? params.from : undefined;
+  const customTo = isIsoDate(params.to) ? params.to : undefined;
+  const hasCustomRange = Boolean(customFrom || customTo);
+  const range = hasCustomRange
+    ? {
+        start: customFrom ? new Date(`${customFrom}T00:00:00.000Z`) : undefined,
+        end: customTo ? new Date(new Date(`${customTo}T00:00:00.000Z`).getTime() + 24 * 60 * 60 * 1000) : undefined,
+      }
+    : monthRange(month);
+  const hasActiveFilters = Boolean(type || serviceType || hasCustomRange);
 
   const [summary, transactions, appointmentStats, allAppointments] = await Promise.all([
     getSummary({ ...range, type, serviceType }),
@@ -72,10 +93,18 @@ export default async function DashboardPage({ searchParams }: Props) {
   const showExpenseCard = effectiveType !== "INCOME";
   const showNetCard = !effectiveType;
 
-  // Filter appointments by month
-  const appointmentsThisMonth = allAppointments.filter(
-    (a) => santiagoMonthString(a.start) === month
-  );
+  // Appointments in the active window - the custom range when set, otherwise the selected month.
+  const appointmentsInRange = allAppointments.filter((a) => {
+    if (hasCustomRange) {
+      if (range.start && a.start < range.start) return false;
+      if (range.end && a.start >= range.end) return false;
+      return true;
+    }
+    return santiagoMonthString(a.start) === month;
+  });
+  const resumenServiceBreakdown = hasCustomRange
+    ? buildServiceBreakdown(appointmentsInRange)
+    : appointmentStats?.serviceBreakdown ?? [];
 
   function monthHref(targetMonth: string): string {
     const qp = new URLSearchParams({ month: targetMonth, section });
@@ -88,11 +117,14 @@ export default async function DashboardPage({ searchParams }: Props) {
     const qp = new URLSearchParams({ month, section: newSection });
     if (params.type) qp.set("type", params.type);
     if (params.service) qp.set("service", params.service);
+    if (customFrom) qp.set("from", customFrom);
+    if (customTo) qp.set("to", customTo);
     return `/dashboard?${qp.toString()}`;
   }
 
-  // "Limpiar" only drops the type/service filters - it shouldn't also bounce
-  // the user back to the current month if they were browsing a past one.
+  // "Limpiar" drops the type/service filters and any custom date range -
+  // it shouldn't also bounce the user back to the current month if they
+  // were browsing a past one.
   function clearFiltersHref(targetSection: string): string {
     return `/dashboard?${new URLSearchParams({ month, section: targetSection }).toString()}`;
   }
@@ -179,11 +211,12 @@ export default async function DashboardPage({ searchParams }: Props) {
           <form method="get" className="card filter-form filter-form--compact" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "2.5rem", padding: "1.2rem 1.2rem" }}>
             <input type="hidden" name="section" value="resumen" />
             <input type="hidden" name="month" value={month} />
-            <div className="month-nav-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div className="month-nav-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
               <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
               <span className="month-nav-label" style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
               <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
               {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn month-nav-today" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
+              <DateRangeFilter defaultFrom={customFrom} defaultTo={customTo} />
             </div>
             <TypeServiceFilter
               defaultType={params.type ?? "ALL"}
@@ -195,6 +228,58 @@ export default async function DashboardPage({ searchParams }: Props) {
 
           {appointmentStats && (
             <>
+              {resumenServiceBreakdown.length > 0 && (
+                <>
+                  <h3 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💅</span> Servicios este mes</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
+                    {resumenServiceBreakdown.map((service) => (
+                      <div key={service.label} className="card" style={cardStyle}>
+                        <div style={cardLabelStyle}>{service.label}</div>
+                        <div style={cardValueStyle}>{service.count}</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💵</span> Ingresos & Gastos</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
+                {showIncomeCard && (
+                  <div className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>Ingresos</div>
+                    <div style={{ ...cardValueStyle, color: "var(--income)" }}>{formatCLP(summary.incomeTotal)}</div>
+                    <div style={cardSubStyle}>{summary.incomeCount} registros</div>
+                  </div>
+                )}
+                {showExpenseCard && (
+                  <div className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>Gastos</div>
+                    <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.expenseTotal)}</div>
+                    <div style={cardSubStyle}>{summary.expenseCount} registros</div>
+                  </div>
+                )}
+                {showNetCard && (
+                  <div className="card" style={{ ...cardStyle, gridColumn: "1 / -1" }}>
+                    <div style={cardLabelStyle}>Ganancia</div>
+                    <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
+                  </div>
+                )}
+              </div>
+              {summary.incomeCount === 0 && summary.expenseCount === 0 && !hasActiveFilters && (
+                <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "-1rem", marginBottom: "2rem" }}>
+                  Aún no hay ingresos ni gastos registrados este mes. Escríbele a tu bot de WhatsApp para anotarlos (ej: &quot;hice un gel x de 20000&quot;).
+                </p>
+              )}
+
+              {appointmentStats.monthlySeries.length > 0 && (
+                <>
+                  <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">📈</span> Evolución mensual</h3>
+                  <div className="card" style={{ padding: "1.5rem", marginBottom: "2rem" }}>
+                    <MonthlyBarChart series={appointmentStats.monthlySeries} currentMonth={month} />
+                  </div>
+                </>
+              )}
+
               <h1 style={{ fontSize: "1.1rem", margin: "0 0 1rem", color: "var(--text)", textAlign: "center" }}><span aria-hidden="true">📊</span> Indicadores de Citas</h1>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.8rem", marginBottom: "2rem" }} className="kpi-grid">
                 <div className="card" style={cardStyle}>
@@ -230,58 +315,6 @@ export default async function DashboardPage({ searchParams }: Props) {
                   </div>
                 )}
               </div>
-
-              {appointmentStats.monthlySeries.length > 0 && (
-                <>
-                  <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">📈</span> Evolución mensual</h3>
-                  <div className="card" style={{ padding: "1.5rem", marginBottom: "2rem" }}>
-                    <MonthlyBarChart series={appointmentStats.monthlySeries} currentMonth={month} />
-                  </div>
-                </>
-              )}
-
-              {appointmentStats.serviceBreakdown.length > 0 && (
-                <>
-                  <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💅</span> Servicios este mes</h3>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
-                    {appointmentStats.serviceBreakdown.map((service) => (
-                      <div key={service.label} className="card" style={cardStyle}>
-                        <div style={cardLabelStyle}>{service.label}</div>
-                        <div style={cardValueStyle}>{service.count}</div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">💵</span> Ingresos & Gastos</h3>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.9rem", marginBottom: "2rem" }}>
-                {showIncomeCard && (
-                  <div className="card" style={cardStyle}>
-                    <div style={cardLabelStyle}>Ingresos</div>
-                    <div style={{ ...cardValueStyle, color: "var(--income)" }}>{formatCLP(summary.incomeTotal)}</div>
-                    <div style={cardSubStyle}>{summary.incomeCount} registros</div>
-                  </div>
-                )}
-                {showExpenseCard && (
-                  <div className="card" style={cardStyle}>
-                    <div style={cardLabelStyle}>Gastos</div>
-                    <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.expenseTotal)}</div>
-                    <div style={cardSubStyle}>{summary.expenseCount} registros</div>
-                  </div>
-                )}
-                {showNetCard && (
-                  <div className="card" style={cardStyle}>
-                    <div style={cardLabelStyle}>Neto</div>
-                    <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
-                  </div>
-                )}
-              </div>
-              {summary.incomeCount === 0 && summary.expenseCount === 0 && !hasActiveFilters && (
-                <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "-1rem", marginBottom: "2rem" }}>
-                  Aún no hay ingresos ni gastos registrados este mes. Escríbele a tu bot de WhatsApp para anotarlos (ej: &quot;hice un gel x de 20000&quot;).
-                </p>
-              )}
             </>
           )}
           <ChatPanel month={month} />
@@ -294,11 +327,12 @@ export default async function DashboardPage({ searchParams }: Props) {
           <form method="get" className="card filter-form filter-form--compact" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "1.5rem", padding: "1.2rem 1.2rem" }}>
             <input type="hidden" name="section" value="transacciones" />
             <input type="hidden" name="month" value={month} />
-            <div className="month-nav-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div className="month-nav-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
               <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
               <span className="month-nav-label" style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
               <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
               {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn month-nav-today" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
+              <DateRangeFilter defaultFrom={customFrom} defaultTo={customTo} />
             </div>
             <TypeServiceFilter
               defaultType={params.type ?? "ALL"}
@@ -360,11 +394,12 @@ export default async function DashboardPage({ searchParams }: Props) {
           <form method="get" className="card filter-form filter-form--compact" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "1.5rem", padding: "1.2rem 1.2rem" }}>
             <input type="hidden" name="section" value="citas" />
             <input type="hidden" name="month" value={month} />
-            <div className="month-nav-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div className="month-nav-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
               <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
               <span className="month-nav-label" style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
               <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
               {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn month-nav-today" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
+              <DateRangeFilter defaultFrom={customFrom} defaultTo={customTo} />
             </div>
             <AppointmentServiceFilter
               defaultValue={params.service ?? "ALL"}
@@ -374,7 +409,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                 { value: "Otro", label: "Otro" },
               ]}
             />
-            {params.service && params.service !== "ALL" && <a href={clearFiltersHref("citas")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
+            {((params.service && params.service !== "ALL") || hasCustomRange) && <a href={clearFiltersHref("citas")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
           <h1 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h1>
@@ -390,7 +425,7 @@ export default async function DashboardPage({ searchParams }: Props) {
               <tbody>
                 {(() => {
                   const hasServiceFilter = Boolean(params.service && params.service !== "ALL");
-                  const filtered = appointmentsThisMonth
+                  const filtered = appointmentsInRange
                     .filter((apt) => !hasServiceFilter || (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === params.service)
                     .sort((a, b) => b.start.getTime() - a.start.getTime());
                   return filtered.length === 0 ? (

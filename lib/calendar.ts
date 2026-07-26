@@ -67,6 +67,20 @@ export function matchAppointmentCategory(title: string, description: string): st
   return findCategory(primary) ?? findCategory(`${title} ${description}`);
 }
 
+// Shared by the month-based stats below and by the dashboard's custom
+// date-range view, which needs the same breakdown over an arbitrary
+// pre-filtered slice of appointments instead of a whole calendar month.
+export function buildServiceBreakdown(appointments: Appointment[]): ServiceCount[] {
+  const counts = new Map<string, number>();
+  for (const a of appointments) {
+    const key = matchAppointmentCategory(a.title, a.description) ?? "Otro";
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return APPOINTMENT_CATEGORIES.map((c) => ({ label: c.label, count: counts.get(c.label) ?? 0 })).concat(
+    counts.has("Otro") ? [{ label: "Otro", count: counts.get("Otro")! }] : []
+  );
+}
+
 function daysInMonth(month: string): number {
   const [year, monthIndex] = month.split("-").map(Number);
   return new Date(Date.UTC(year, monthIndex, 0)).getUTCDate();
@@ -140,14 +154,7 @@ export async function getAppointmentStats(month: string): Promise<AppointmentSta
 
   const averagePerWeek = Math.round((countThisMonth / (daysElapsedInMonth(month) / 7)) * 10) / 10;
 
-  const serviceCounts = new Map<string, number>();
-  for (const a of appointments) {
-    if (santiagoMonthString(a.start) !== month) continue;
-    const key = matchAppointmentCategory(a.title, a.description) ?? "Otro";
-    serviceCounts.set(key, (serviceCounts.get(key) ?? 0) + 1);
-  }
-  const serviceBreakdown = APPOINTMENT_CATEGORIES.map((c) => ({ label: c.label, count: serviceCounts.get(c.label) ?? 0 }))
-    .concat(serviceCounts.has("Otro") ? [{ label: "Otro", count: serviceCounts.get("Otro")! }] : []);
+  const serviceBreakdown = buildServiceBreakdown(appointments.filter((a) => santiagoMonthString(a.start) === month));
 
   return {
     countThisMonth,
