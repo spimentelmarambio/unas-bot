@@ -131,8 +131,23 @@ table.pretty tbody tr:hover {
 
 /* Mobile responsive - sidebar at bottom */
 @media (max-width: 768px) {
+  :root {
+    --pink-bg: #faf4f7;
+  }
+
   body {
     font-size: 13px;
+  }
+
+  .card {
+    border-radius: 14px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07) !important;
+  }
+
+  main.dashboard-main h1,
+  main.dashboard-main h3 {
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
   }
 
   .dashboard-sidebar {
@@ -183,6 +198,8 @@ table.pretty tbody tr:hover {
     background: var(--accent) !important;
     color: #fff !important;
     font-weight: 600 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 3px 10px rgba(217, 83, 138, 0.35) !important;
   }
 
   .dashboard-main {
