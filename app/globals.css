@@ -12,22 +12,6 @@
   --card-translucent: rgba(255, 255, 255, 0.95);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --pink-bg: #1a1a1a;
-    --pink-bg-2: #2d2d2d;
-    --card: #242424;
-    --border: #3a3a3a;
-    --accent: #e878a8;
-    --accent-dark: #d9538a;
-    --text: #f0f0f0;
-    --muted: #a0a0a0;
-    --income: #4ade80;
-    --expense: #f472b6;
-    --card-translucent: rgba(36, 36, 36, 0.95);
-  }
-}
-
 * {
   box-sizing: border-box;
 }
