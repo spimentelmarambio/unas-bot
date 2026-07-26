@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const labelStyle: React.CSSProperties = {
   display: "flex",
@@ -24,6 +24,15 @@ export function DateRangeFilter({ defaultFrom, defaultTo }: Props) {
   const [toValue, setToValue] = useState(defaultTo ?? "");
   const hasRange = Boolean(defaultFrom || defaultTo);
   const isInverted = Boolean(fromValue && toValue && fromValue > toValue);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   return (
     <div style={{ position: "relative", display: "inline-flex" }}>

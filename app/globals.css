@@ -122,6 +122,13 @@ table.pretty tbody tr:hover {
   display: contents;
 }
 
+.month-nav-arrow {
+  background: transparent !important;
+  color: var(--accent-dark) !important;
+  font-size: 1.3rem !important;
+  font-weight: 700 !important;
+}
+
 /* Mobile responsive - sidebar at bottom */
 @media (max-width: 768px) {
   body {
@@ -290,9 +297,10 @@ table.pretty tbody tr:hover {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 0.95rem !important;
-    background: var(--accent) !important;
-    color: #fff !important;
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    background: transparent !important;
+    color: var(--accent-dark) !important;
     border: none !important;
     border-radius: 50% !important;
   }
