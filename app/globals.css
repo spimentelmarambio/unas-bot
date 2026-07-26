@@ -262,16 +262,6 @@ table.pretty tbody tr:hover {
     font-size: 1rem !important;
   }
 
-  .page-header-row {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 0.8rem !important;
-  }
-
-  .page-header-row > div {
-    justify-content: center !important;
-  }
-
   .toolbar-row {
     flex-direction: column !important;
     align-items: stretch !important;

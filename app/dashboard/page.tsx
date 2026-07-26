@@ -6,7 +6,6 @@ import type { NailTransactionType } from "@/lib/generated/prisma/enums";
 import { deleteTransactionAction } from "./actions";
 import { DeleteButton } from "./DeleteButton";
 import { MonthlyBarChart } from "./MonthlyBarChart";
-import { ScrollRightOnMount } from "./ScrollRightOnMount";
 import { ChatPanel } from "./ChatPanel";
 import { TypeServiceFilter } from "./TypeServiceFilter";
 import { AppointmentServiceFilter } from "./AppointmentServiceFilter";
@@ -235,9 +234,9 @@ export default async function DashboardPage({ searchParams }: Props) {
               {appointmentStats.monthlySeries.length > 0 && (
                 <>
                   <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">📈</span> Evolución mensual</h3>
-                  <ScrollRightOnMount className="card" style={{ padding: "1.5rem", marginBottom: "2rem", overflowX: "auto" }}>
+                  <div className="card" style={{ padding: "1.5rem", marginBottom: "2rem" }}>
                     <MonthlyBarChart series={appointmentStats.monthlySeries} currentMonth={month} />
-                  </ScrollRightOnMount>
+                  </div>
                 </>
               )}
 
@@ -292,12 +291,6 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* TRANSACCIONES SECTION */}
       {section === "transacciones" && (
         <>
-          <div className="page-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-            <h1 style={{ fontSize: "1.6rem", margin: "0", color: "var(--text)", fontWeight: 700 }}>Transacciones</h1>
-          </div>
-
-          {/* Future features hidden for now */}
-
           <form method="get" className="card filter-form filter-form--compact" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "1.5rem", padding: "1.2rem 1.2rem" }}>
             <input type="hidden" name="section" value="transacciones" />
             <input type="hidden" name="month" value={month} />
