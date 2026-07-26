@@ -26,10 +26,18 @@ export function TypeServiceFilter({ defaultType, defaultService, serviceOptions 
   const [service, setService] = useState(defaultService);
 
   return (
-    <>
+    <div className="type-service-grid">
       <label style={labelStyle}>
         Tipo
-        <select name="type" value={type} onChange={(e) => setType(e.target.value)} className="input">
+        <select
+          name="type"
+          value={type}
+          onChange={(e) => {
+            setType(e.target.value);
+            e.currentTarget.form?.requestSubmit();
+          }}
+          className="input"
+        >
           <option value="ALL">Todos</option>
           <option value="INCOME">Ingresos</option>
           <option value="EXPENSE">Gastos</option>
@@ -37,13 +45,22 @@ export function TypeServiceFilter({ defaultType, defaultService, serviceOptions 
       </label>
       <label style={labelStyle}>
         Servicio
-        <select name="service" value={service} onChange={(e) => setService(e.target.value)} className="input" disabled={type === "EXPENSE"}>
+        <select
+          name="service"
+          value={service}
+          onChange={(e) => {
+            setService(e.target.value);
+            e.currentTarget.form?.requestSubmit();
+          }}
+          className="input"
+          disabled={type === "EXPENSE"}
+        >
           <option value="ALL">Todos</option>
           {serviceOptions.map((s) => (
             <option key={s.value} value={s.value}>{s.label}</option>
           ))}
         </select>
       </label>
-    </>
+    </div>
   );
 }

@@ -6,20 +6,12 @@ import type { NailTransactionType } from "@/lib/generated/prisma/enums";
 import { deleteTransactionAction } from "./actions";
 import { DeleteButton } from "./DeleteButton";
 import { MonthlyBarChart } from "./MonthlyBarChart";
+import { ScrollRightOnMount } from "./ScrollRightOnMount";
 import { ChatPanel } from "./ChatPanel";
 import { TypeServiceFilter } from "./TypeServiceFilter";
-import { MonthSelect } from "./MonthSelect";
+import { AppointmentServiceFilter } from "./AppointmentServiceFilter";
 
 export const dynamic = "force-dynamic";
-
-const MONTH_DROPDOWN_OFFSETS = [-11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0];
-
-function monthOptions(month: string): { value: string; label: string }[] {
-  return MONTH_DROPDOWN_OFFSETS.map((offset) => {
-    const m = shiftMonthString(month, offset);
-    return { value: m, label: monthLabel(m) };
-  });
-}
 
 function formatCLP(amount: number): string {
   return amount.toLocaleString("es-CL", {
@@ -123,33 +115,32 @@ export default async function DashboardPage({ searchParams }: Props) {
         flexDirection: "column",
       }} className="sidebar dashboard-sidebar">
         <div style={{ marginBottom: "1.5rem", paddingLeft: "0.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", margin: "0", color: "var(--text)", fontWeight: 600 }}><span aria-hidden="true">💅</span> MartiNails</h2>
+          <h2 style={{ fontSize: "1rem", margin: "0", color: "var(--accent)", fontWeight: 700 }}>MartiNails</h2>
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.2rem", flex: 1 }}>
+        <nav style={{ display: "flex", flexDirection: "column", gap: "0.3rem", flex: 1 }}>
           {[
-            { id: "resumen", label: "Resumen", icon: "📊" },
-            { id: "transacciones", label: "Transacciones", icon: "💰" },
-            { id: "citas", label: "Citas", icon: "📅" },
+            { id: "resumen", label: "Resumen" },
+            { id: "transacciones", label: "Transacciones" },
+            { id: "citas", label: "Citas" },
           ].map((item) => (
             <a
               key={item.id}
               href={sectionHref(item.id)}
               style={{
-                padding: "0.6rem 0.8rem",
-                borderRadius: "8px",
-                backgroundColor: section === item.id ? "var(--pink-bg-2)" : "transparent",
-                color: section === item.id ? "var(--accent)" : "var(--text)",
-                fontWeight: section === item.id ? 500 : 400,
-                fontSize: "0.85rem",
+                padding: "0.75rem 1rem",
+                borderRadius: "6px",
+                backgroundColor: section === item.id ? "var(--accent)" : "transparent",
+                color: section === item.id ? "#fff" : "var(--text)",
+                fontWeight: section === item.id ? 600 : 400,
+                fontSize: "0.9rem",
                 textDecoration: "none",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.6rem",
+                display: "block",
                 transition: "all 0.2s",
+                borderLeft: section === item.id ? "3px solid var(--accent-dark)" : "3px solid transparent",
+                paddingLeft: section === item.id ? "0.8rem" : "1rem",
               }}
             >
-              <span style={{ fontSize: "1rem" }} aria-hidden="true">{item.icon}</span>
               {item.label}
             </a>
           ))}
@@ -161,20 +152,18 @@ export default async function DashboardPage({ searchParams }: Props) {
               href={sectionHref("resumen")}
               aria-label="Chat IA - disponible en la sección Resumen"
               style={{
-                padding: "0.6rem 0.8rem",
-                borderRadius: "8px",
+                padding: "0.75rem 1rem",
+                borderRadius: "6px",
                 backgroundColor: "transparent",
                 color: "var(--text)",
                 fontWeight: 400,
-                fontSize: "0.85rem",
+                fontSize: "0.9rem",
                 textDecoration: "none",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.6rem",
+                display: "block",
                 transition: "all 0.2s",
+                borderLeft: "3px solid transparent",
               }}
             >
-              <span style={{ fontSize: "1rem" }} aria-hidden="true">💬</span>
               Chat IA
             </a>
           </nav>
@@ -188,21 +177,20 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* RESUMEN SECTION */}
       {section === "resumen" && (
         <>
-          <form method="get" className="card filter-form" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "2.5rem", padding: "1.2rem 1.2rem" }}>
+          <form method="get" className="card filter-form filter-form--compact" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "2.5rem", padding: "1.2rem 1.2rem" }}>
             <input type="hidden" name="section" value="resumen" />
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
-              <span style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
-              <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
-              {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
+            <input type="hidden" name="month" value={month} />
+            <div className="month-nav-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
+              <span className="month-nav-label" style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
+              <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
+              {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn month-nav-today" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
             </div>
-            <MonthSelect defaultValue={month} options={monthOptions(month)} />
             <TypeServiceFilter
               defaultType={params.type ?? "ALL"}
               defaultService={params.service ?? "ALL"}
               serviceOptions={SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))}
             />
-            <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
             {hasActiveFilters && <a href={clearFiltersHref("resumen")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
@@ -247,9 +235,9 @@ export default async function DashboardPage({ searchParams }: Props) {
               {appointmentStats.monthlySeries.length > 0 && (
                 <>
                   <h3 style={{ fontSize: "1rem", margin: "1.5rem 0 1rem", color: "var(--text)" }}><span aria-hidden="true">📈</span> Evolución mensual</h3>
-                  <div className="card" style={{ padding: "1.5rem", marginBottom: "2rem", overflowX: "auto" }}>
+                  <ScrollRightOnMount className="card" style={{ padding: "1.5rem", marginBottom: "2rem", overflowX: "auto" }}>
                     <MonthlyBarChart series={appointmentStats.monthlySeries} currentMonth={month} />
-                  </div>
+                  </ScrollRightOnMount>
                 </>
               )}
 
@@ -306,28 +294,25 @@ export default async function DashboardPage({ searchParams }: Props) {
         <>
           <div className="page-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
             <h1 style={{ fontSize: "1.6rem", margin: "0", color: "var(--text)", fontWeight: 700 }}>Transacciones</h1>
-            <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>← Anterior</a>
-                <span style={{ minWidth: "120px", textAlign: "center", fontWeight: 600 }}>{monthLabel(month)}</span>
-                <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", backgroundColor: "var(--accent-dark)", textDecoration: "none" }}>Siguiente →</a>
-                {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", textDecoration: "none" }}>Hoy</a>}
-              </div>
-            </div>
           </div>
 
           {/* Future features hidden for now */}
 
-          <form method="get" className="card filter-form" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
+          <form method="get" className="card filter-form filter-form--compact" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "1.5rem", padding: "1.2rem 1.2rem" }}>
             <input type="hidden" name="section" value="transacciones" />
-            <MonthSelect defaultValue={month} options={monthOptions(month)} />
+            <input type="hidden" name="month" value={month} />
+            <div className="month-nav-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
+              <span className="month-nav-label" style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
+              <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
+              {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn month-nav-today" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
+            </div>
             <TypeServiceFilter
               defaultType={params.type ?? "ALL"}
               defaultService={params.service ?? "ALL"}
               serviceOptions={SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))}
             />
-            <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
-            {hasActiveFilters && <a href={clearFiltersHref("transacciones")} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
+            {hasActiveFilters && <a href={clearFiltersHref("transacciones")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
           <div className="card" style={{ overflowX: "auto" }}>
             <table className="pretty">
@@ -379,26 +364,24 @@ export default async function DashboardPage({ searchParams }: Props) {
       {/* CITAS SECTION */}
       {section === "citas" && (
         <>
-          <form method="get" className="card filter-form" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1.5rem", padding: "1rem 1.25rem" }}>
+          <form method="get" className="card filter-form filter-form--compact" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "end", justifyContent: "center", marginBottom: "1.5rem", padding: "1.2rem 1.2rem" }}>
             <input type="hidden" name="section" value="citas" />
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
-              <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
-              {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
+            <input type="hidden" name="month" value={month} />
+            <div className="month-nav-row" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <a href={monthHref(shiftMonthString(month, -1))} aria-label="Mes anterior" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>←</a>
+              <span className="month-nav-label" style={{ minWidth: "110px", textAlign: "center", fontWeight: 600, fontSize: "0.95rem" }}>{monthLabel(month)}</span>
+              <a href={monthHref(shiftMonthString(month, 1))} aria-label="Mes siguiente" className="btn month-nav-arrow" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>→</a>
+              {month !== currentMonth && <a href={monthHref(currentMonth)} aria-label="Ir a este mes" className="btn month-nav-today" style={{ textDecoration: "none", padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>Hoy</a>}
             </div>
-            <MonthSelect defaultValue={month} options={monthOptions(month)} />
-            <label style={labelStyle}>
-              Servicio
-              <select name="service" defaultValue={params.service ?? "ALL"} className="input">
-                <option value="ALL">Todos</option>
-                {APPOINTMENT_CATEGORY_LABELS.map((label) => (
-                  <option key={label} value={label}>{label}</option>
-                ))}
-                <option value="Otro">Otro</option>
-              </select>
-            </label>
-            <button type="submit" className="btn" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Filtrar</button>
-            {params.service && params.service !== "ALL" && <a href={clearFiltersHref("citas")} style={{ fontSize: "0.75rem" }}>Limpiar</a>}
+            <AppointmentServiceFilter
+              defaultValue={params.service ?? "ALL"}
+              options={[
+                { value: "ALL", label: "Todos" },
+                ...APPOINTMENT_CATEGORY_LABELS.map((label) => ({ value: label, label })),
+                { value: "Otro", label: "Otro" },
+              ]}
+            />
+            {params.service && params.service !== "ALL" && <a href={clearFiltersHref("citas")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
           <h1 style={{ fontSize: "1rem", margin: "0 0 1rem", color: "var(--text)" }}>Listado de Citas</h1>
@@ -460,10 +443,3 @@ const cardStyle: React.CSSProperties = {
 const cardLabelStyle: React.CSSProperties = { fontSize: "0.8rem", color: "var(--muted)", marginBottom: "0.4rem" };
 const cardValueStyle: React.CSSProperties = { fontSize: "1.8rem", fontWeight: 700, lineHeight: 1 };
 const cardSubStyle: React.CSSProperties = { fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.3rem" };
-const labelStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  fontSize: "0.8rem",
-  color: "var(--muted)",
-  gap: "0.3rem",
-};

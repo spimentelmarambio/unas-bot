@@ -8,21 +8,17 @@ const labelStyle: React.CSSProperties = {
   gap: "0.3rem",
 };
 
-// Jumping to a month 6+ back used to need repeated arrow clicks or picking
-// the month then still clicking "Filtrar". Submitting on change makes this
-// dropdown behave like the prev/next arrows next to it - one action, done.
-export function MonthSelect({
-  defaultValue,
-  options,
-}: {
+type Props = {
   defaultValue: string;
   options: { value: string; label: string }[];
-}) {
+};
+
+export function AppointmentServiceFilter({ defaultValue, options }: Props) {
   return (
     <label style={labelStyle}>
-      Mes
+      Servicio
       <select
-        name="month"
+        name="service"
         defaultValue={defaultValue}
         className="input"
         onChange={(e) => e.currentTarget.form?.requestSubmit()}
