@@ -43,7 +43,7 @@ export function AppointmentsTable({ rows, emptyMessage }: Props) {
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={3} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
+              <td colSpan={3} className="table-empty" style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
                 {emptyMessage}
               </td>
             </tr>

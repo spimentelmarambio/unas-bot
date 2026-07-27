@@ -129,6 +129,15 @@ table.pretty tr:last-child td {
   border-bottom: none;
 }
 
+/* Data cells stay on one line so rows read cleanly, but the empty-state
+   message is a full sentence - nowrap stretched it to ~650px inside a
+   ~350px card, so on a phone you had to scroll sideways to read it. */
+table.pretty td.table-empty {
+  white-space: normal;
+  max-width: 0;
+  line-height: 1.5;
+}
+
 table.pretty tbody tr:hover {
   background: var(--pink-bg-2);
 }
@@ -208,7 +217,24 @@ table.pretty tbody tr:hover {
 
   .dashboard-main {
     padding: 0.8rem !important;
-    padding-bottom: 70px !important;
+    /* The bottom nav is ~61px tall and fixed; 70px left only ~9px of
+       clearance under the last card, which read as content jammed
+       against the bar. */
+    padding-bottom: 96px !important;
+  }
+
+  /* Side by side the field was down to ~240px and clipped its own
+     placeholder mid-question; stacked it gets the full card width and
+     the button becomes a comfortable tap target. */
+  .chat-ask-row {
+    flex-direction: column !important;
+    gap: 0.6rem !important;
+  }
+
+  .chat-ask-row .btn {
+    width: 100% !important;
+    padding: 0.65rem !important;
+    font-size: 0.9rem !important;
   }
 
   .kpi-grid {

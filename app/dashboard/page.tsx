@@ -405,7 +405,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                 ))}
                 {transactions.length === 0 && (
                   <tr>
-                    <td colSpan={4} style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
+                    <td colSpan={4} className="table-empty" style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
                       {hasActiveFilters
                         ? "No hay transacciones con estos filtros"
                         : "No hay transacciones. Escríbele a tu bot de WhatsApp para registrar un ingreso o gasto."}

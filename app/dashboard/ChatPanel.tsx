@@ -38,7 +38,7 @@ export function ChatPanel({ month }: Props) {
   return (
     <div className="card" style={{ padding: "1.5rem", marginTop: "2rem" }}>
       <h2 className="section-title">Consulta IA</h2>
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+      <div className="chat-ask-row" style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
         <input
           type="text"
           className="input"
