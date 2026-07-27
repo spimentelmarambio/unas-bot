@@ -88,7 +88,7 @@ export function DateRangeFilter({ defaultFrom, defaultTo }: Props) {
           inputs and silently dropped the active range. */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="card"
+        className="card date-range-popup"
         style={{
           position: "absolute",
           top: "calc(100% + 8px)",

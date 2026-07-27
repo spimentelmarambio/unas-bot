@@ -383,6 +383,23 @@ table.pretty tbody tr:hover {
     min-height: auto !important;
     padding: 0.3rem !important;
   }
+
+  /* On phones the anchored dropdown landed on top of the filter card and
+     the table behind it - two white surfaces overlapping, with the content
+     underneath peeking out around the edges, which read as "cut off".
+     Centering it as a modal over the dimmed backdrop removes the overlap
+     entirely and matches the appointment detail modal. */
+  .date-range-popup {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(300px, calc(100vw - 2.5rem)) !important;
+    max-width: none !important;
+    padding: 1.25rem !important;
+    box-shadow: 0 12px 32px rgba(36, 31, 33, 0.28) !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

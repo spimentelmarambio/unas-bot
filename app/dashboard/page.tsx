@@ -37,6 +37,13 @@ function monthLabelShort(month: string): string {
   return label.replace(".", "").replace(" de ", " ");
 }
 
+// The Citas dropdown offers the appointment category labels plus "Otro".
+const APPOINTMENT_SERVICE_VALUES = [...APPOINTMENT_CATEGORY_LABELS, "Otro"];
+
+function isAppointmentCategory(value: string | undefined): value is string {
+  return typeof value === "string" && APPOINTMENT_SERVICE_VALUES.includes(value);
+}
+
 function isServiceType(value: string | undefined): value is ServiceType {
   return SERVICE_TYPES.includes(value as ServiceType);
 }
@@ -62,6 +69,13 @@ export default async function DashboardPage({ searchParams }: Props) {
   const section = (params.section ?? "resumen") as "resumen" | "transacciones" | "citas";
   const type = isTransactionType(params.type) ? params.type : undefined;
   const serviceType = type !== "EXPENSE" && isServiceType(params.service) ? params.service : undefined;
+
+  // Citas filters by appointment category label ("Gel X") while Resumen and
+  // Transacciones filter by the transaction ServiceType enum ("GEL_X"), yet
+  // both travel in the same `service` param. Each section has to validate
+  // against its own vocabulary: an unvalidated value from the other section
+  // filtered every row out while the dropdown still read "Todos".
+  const appointmentService = isAppointmentCategory(params.service) ? params.service : undefined;
 
   // A custom "desde/hasta" range overrides the selected month for anything
   // that can filter by an arbitrary window (transactions, the appointment
@@ -129,7 +143,12 @@ export default async function DashboardPage({ searchParams }: Props) {
   function sectionHref(newSection: string): string {
     const qp = new URLSearchParams({ month, section: newSection });
     if (params.type) qp.set("type", params.type);
-    if (params.service) qp.set("service", params.service);
+    // Citas reads `service` as a category label while the other two read it
+    // as a ServiceType enum, so the value only travels between the sections
+    // that share the enum - carrying it into Citas filtered everything out.
+    if (params.service && section !== "citas" && newSection !== "citas") {
+      qp.set("service", params.service);
+    }
     if (customFrom) qp.set("from", customFrom);
     if (customTo) qp.set("to", customTo);
     return `/dashboard?${qp.toString()}`;
@@ -418,33 +437,34 @@ export default async function DashboardPage({ searchParams }: Props) {
               <DateRangeFilter defaultFrom={customFrom} defaultTo={customTo} />
             </div>
             <AppointmentServiceFilter
-              defaultValue={params.service ?? "ALL"}
+              defaultValue={appointmentService ?? "ALL"}
               options={[
                 { value: "ALL", label: "Todos" },
                 ...APPOINTMENT_CATEGORY_LABELS.map((label) => ({ value: label, label })),
                 { value: "Otro", label: "Otro" },
               ]}
             />
-            {((params.service && params.service !== "ALL") || hasCustomRange) && <a href={clearFiltersHref("citas")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
+            {(appointmentService || hasCustomRange) && <a href={clearFiltersHref("citas")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
           <h2 className="section-title">Listado de citas</h2>
           <div className="card" style={{ overflowX: "auto" }}>
             <AppointmentsTable
-              rows={(() => {
-                const hasServiceFilter = Boolean(params.service && params.service !== "ALL");
-                return appointmentsInRange
-                  .filter((apt) => !hasServiceFilter || (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === params.service)
-                  .sort((a, b) => b.start.getTime() - a.start.getTime())
-                  .map((apt) => ({
-                    title: apt.title,
-                    description: apt.description,
-                    start: apt.start,
-                    category: matchAppointmentCategory(apt.title, apt.description) ?? (apt.title || "Sin nombre"),
-                  }));
-              })()}
+              rows={appointmentsInRange
+                .filter(
+                  (apt) =>
+                    !appointmentService ||
+                    (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === appointmentService
+                )
+                .sort((a, b) => b.start.getTime() - a.start.getTime())
+                .map((apt) => ({
+                  title: apt.title,
+                  description: apt.description,
+                  start: apt.start,
+                  category: matchAppointmentCategory(apt.title, apt.description) ?? (apt.title || "Sin nombre"),
+                }))}
               emptyMessage={
-                params.service && params.service !== "ALL"
+                appointmentService
                   ? "No hay citas con este filtro"
                   : hasCustomRange
                     ? "No hay citas en este rango de fechas."
