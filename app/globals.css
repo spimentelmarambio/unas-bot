@@ -231,8 +231,14 @@ table.pretty tbody tr:hover {
     gap: 0.6rem !important;
   }
 
+  .chat-ask-row .input {
+    min-height: 44px !important;
+    font-size: 0.9rem !important;
+  }
+
   .chat-ask-row .btn {
     width: 100% !important;
+    min-height: 44px !important;
     padding: 0.65rem !important;
     font-size: 0.9rem !important;
   }
@@ -336,10 +342,10 @@ table.pretty tbody tr:hover {
   }
 
   form.filter-form--compact > div.month-nav-row > a.month-nav-arrow {
-    width: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-    height: 36px !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    height: 40px !important;
     padding: 0 !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -362,8 +368,10 @@ table.pretty tbody tr:hover {
 
   form.filter-form--compact > div.month-nav-row > a.month-nav-today {
     width: auto !important;
-    min-height: 32px !important;
-    padding: 0.3rem 0.6rem !important;
+    min-height: 40px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 0 0.7rem !important;
     font-size: 0.75rem !important;
     background: transparent !important;
     color: var(--muted) !important;
@@ -378,8 +386,8 @@ table.pretty tbody tr:hover {
   }
 
   form.filter-form--compact .input {
-    min-height: 38px !important;
-    padding: 0.4rem 0.5rem !important;
+    min-height: 40px !important;
+    padding: 0.4rem 0.55rem !important;
     font-size: 0.85rem !important;
   }
 
@@ -392,8 +400,8 @@ table.pretty tbody tr:hover {
 
   form.filter-form--compact button.date-range-toggle {
     width: auto !important;
-    min-height: 32px !important;
-    padding: 0.3rem 0.6rem !important;
+    min-height: 40px !important;
+    padding: 0 0.7rem !important;
     flex: none !important;
   }
 

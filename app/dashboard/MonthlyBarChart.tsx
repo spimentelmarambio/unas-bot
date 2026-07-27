@@ -85,7 +85,7 @@ export function MonthlyBarChart({ series, currentMonth }: Props) {
         {gridValues.map((v) => {
           const y = topSpace + plotHeight - (v / gridMax) * plotHeight;
           return (
-            <text key={v} x={axisWidth - 6} y={y + 3} textAnchor="end" fontSize={9} fill="var(--muted)">
+            <text key={v} x={axisWidth - 6} y={y + 3} textAnchor="end" fontSize={10} fill="var(--muted)">
               {v}
             </text>
           );
@@ -140,7 +140,7 @@ export function MonthlyBarChart({ series, currentMonth }: Props) {
                   x={x + barWidth / 2}
                   y={topSpace + plotHeight + 14}
                   textAnchor="end"
-                  fontSize={9}
+                  fontSize={10}
                   fontWeight={isCurrent ? 700 : 400}
                   fill={isCurrent ? "var(--text)" : "var(--muted)"}
                   transform={`rotate(-40 ${x + barWidth / 2} ${topSpace + plotHeight + 14})`}
