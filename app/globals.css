@@ -229,6 +229,16 @@ table.pretty tbody tr:hover {
   line-height: 1;
 }
 
+/* Month total, bottom-left under the grid. */
+.cal-foot {
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
 .cal-appt {
   display: flex;
   align-items: center;

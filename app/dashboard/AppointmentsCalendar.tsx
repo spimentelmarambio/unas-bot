@@ -113,6 +113,9 @@ export function AppointmentsCalendar({ rows, month }: Props) {
             );
           })}
         </div>
+        <div className="cal-foot">
+          {rows.length} {rows.length === 1 ? "cita" : "citas"}
+        </div>
       </div>
 
       {openDay && (
