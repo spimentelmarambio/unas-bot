@@ -12,6 +12,7 @@ import { TypeServiceFilter } from "./TypeServiceFilter";
 import { AppointmentServiceFilter } from "./AppointmentServiceFilter";
 import { DateRangeFilter } from "./DateRangeFilter";
 import { AppointmentsTable } from "./AppointmentsTable";
+import { AppointmentsCalendar } from "./AppointmentsCalendar";
 
 export const dynamic = "force-dynamic";
 
@@ -132,6 +133,22 @@ export default async function DashboardPage({ searchParams }: Props) {
   const resumenServiceBreakdown = hasCustomRange
     ? buildServiceBreakdown(appointmentsInRange)
     : appointmentStats?.serviceBreakdown ?? [];
+
+  // Shared by the Citas calendar and the table below it so both always show
+  // the same set under the active service/date filters.
+  const citasRows = appointmentsInRange
+    .filter(
+      (apt) =>
+        !appointmentService ||
+        (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === appointmentService
+    )
+    .sort((a, b) => b.start.getTime() - a.start.getTime())
+    .map((apt) => ({
+      title: apt.title,
+      description: apt.description,
+      start: apt.start,
+      category: matchAppointmentCategory(apt.title, apt.description) ?? (apt.title || "Sin nombre"),
+    }));
 
   function monthHref(targetMonth: string): string {
     const qp = new URLSearchParams({ month: targetMonth, section });
@@ -447,22 +464,13 @@ export default async function DashboardPage({ searchParams }: Props) {
             {(appointmentService || hasCustomRange) && <a href={clearFiltersHref("citas")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
 
+          <h2 className="section-title">Calendario</h2>
+          <AppointmentsCalendar rows={citasRows} month={month} />
+
           <h2 className="section-title">Listado de citas</h2>
           <div className="card" style={{ overflowX: "auto" }}>
             <AppointmentsTable
-              rows={appointmentsInRange
-                .filter(
-                  (apt) =>
-                    !appointmentService ||
-                    (matchAppointmentCategory(apt.title, apt.description) ?? "Otro") === appointmentService
-                )
-                .sort((a, b) => b.start.getTime() - a.start.getTime())
-                .map((apt) => ({
-                  title: apt.title,
-                  description: apt.description,
-                  start: apt.start,
-                  category: matchAppointmentCategory(apt.title, apt.description) ?? (apt.title || "Sin nombre"),
-                }))}
+              rows={citasRows}
               emptyMessage={
                 appointmentService
                   ? "No hay citas con este filtro"

@@ -153,6 +153,115 @@ table.pretty tbody tr:hover {
   font-weight: 700 !important;
 }
 
+/* Appointment calendar */
+/* Cells are square, so an uncapped grid on a wide screen blew up to
+   135px tiles holding a single digit. Capped, the month stays a compact
+   block; on phones the card is narrower than this so it has no effect. */
+.cal-card {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  max-width: 460px;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-head {
+  margin-bottom: 6px;
+}
+
+.cal-wd {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 2px;
+}
+
+.cal-day {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-family: inherit;
+  padding: 0;
+}
+
+/* Days with citas are the only tappable cells, so they carry the accent
+   tint and the count; empty days stay recessive. */
+.cal-day--has {
+  background: var(--pink-bg-2);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cal-day--has:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cal-day--has:hover .cal-day-c {
+  color: #fff;
+}
+
+.cal-day--today {
+  border-color: var(--accent);
+}
+
+.cal-day-c {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+  line-height: 1;
+}
+
+.cal-appt {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.cal-appt:hover {
+  background: var(--pink-bg-2);
+}
+
+.cal-appt-time {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cal-appt-service {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Mobile responsive - sidebar at bottom */
 @media (max-width: 768px) {
   body {
