@@ -1,7 +1,7 @@
 import { getSummary, getTransactions, monthRange } from "@/lib/transactions";
 import { computeAppointmentStats, fetchAppointments, matchAppointmentCategory, buildServiceBreakdown, APPOINTMENT_CATEGORY_LABELS } from "@/lib/calendar";
 import { santiagoMonthString, shiftMonthString, santiagoMidnightUtc, parseDateOnly } from "@/lib/dates";
-import { formatCLP, formatDate, formatTime } from "@/lib/format";
+import { formatCLP, formatDate } from "@/lib/format";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
 import type { NailTransactionType } from "@/lib/generated/prisma/enums";
 import { deleteTransactionAction } from "./actions";

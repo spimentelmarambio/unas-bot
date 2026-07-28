@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { formatDate, formatTime } from "@/lib/format";
+import { formatAppointmentDate, formatAppointmentTime } from "@/lib/format";
 
 export type AppointmentRow = {
   title: string;
@@ -50,8 +50,8 @@ export function AppointmentDetailModal({ appointment, onClose }: Props) {
       >
         <h3 style={{ margin: "0 0 1rem", fontSize: "1.05rem", color: "var(--text)" }}>Detalle de la cita</h3>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", fontSize: "0.9rem" }}>
-          <div><strong>Fecha:</strong> {formatDate(appointment.start)}</div>
-          <div><strong>Hora:</strong> {formatTime(appointment.start)}</div>
+          <div><strong>Fecha:</strong> {formatAppointmentDate(appointment.start)}</div>
+          <div><strong>Hora:</strong> {formatAppointmentTime(appointment.start)}</div>
           <div><strong>Servicio:</strong> {appointment.category}</div>
           {appointment.title && <div><strong>Título:</strong> {appointment.title}</div>}
           {appointment.description && <div><strong>Detalle:</strong> {appointment.description}</div>}

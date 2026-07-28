@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatDate, formatTime } from "@/lib/format";
+import { formatAppointmentDate, formatAppointmentTime } from "@/lib/format";
 import { AppointmentDetailModal, type AppointmentRow } from "./AppointmentDetailModal";
 
 export type { AppointmentRow };
@@ -41,8 +41,8 @@ export function AppointmentsTable({ rows, emptyMessage }: Props) {
                 onClick={() => setSelected(apt)}
                 style={{ cursor: "pointer" }}
               >
-                <td>{formatDate(apt.start)}</td>
-                <td>{formatTime(apt.start)}</td>
+                <td>{formatAppointmentDate(apt.start)}</td>
+                <td>{formatAppointmentTime(apt.start)}</td>
                 <td style={{ fontSize: "0.85rem" }} title={apt.title || undefined}>
                   {apt.category}
                 </td>

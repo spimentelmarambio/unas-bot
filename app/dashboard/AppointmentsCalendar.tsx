@@ -1,23 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatTime } from "@/lib/format";
+import { formatAppointmentTime } from "@/lib/format";
 import { AppointmentDetailModal, type AppointmentRow } from "./AppointmentDetailModal";
 
 const WEEKDAYS = ["lu", "ma", "mi", "ju", "vi", "sá", "do"];
 
-// Bucket by the same UTC calendar day the table rows are formatted with, so
-// a cita listed as "31 jul" always lands on the 31st in the grid.
+// Bucket by the Chilean calendar day - the same day the table rows and the
+// month filter use - so a cita listed as "31 jul" always lands on the 31st.
 const DAY_KEY = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "UTC",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-
-// "Today" is the only thing keyed off real local time - it's a highlight for
-// the user, so it follows the Chilean calendar rather than UTC.
-const SANTIAGO_TODAY = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/Santiago",
   year: "numeric",
   month: "2-digit",
@@ -68,7 +59,7 @@ export function AppointmentsCalendar({ rows, month }: Props) {
     else byDay.set(key, [row]);
   }
 
-  const todayKey = SANTIAGO_TODAY.format(new Date());
+  const todayKey = DAY_KEY.format(new Date());
   const dayRows = openDay
     ? [...(byDay.get(openDay) ?? [])].sort((a, b) => a.start.getTime() - b.start.getTime())
     : [];
@@ -146,7 +137,7 @@ export function AppointmentsCalendar({ rows, month }: Props) {
                   className="cal-appt"
                   onClick={() => setSelected(apt)}
                 >
-                  <span className="cal-appt-time">{formatTime(apt.start)}</span>
+                  <span className="cal-appt-time">{formatAppointmentTime(apt.start)}</span>
                   <span className="cal-appt-service">{apt.category}</span>
                 </button>
               ))}
