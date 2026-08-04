@@ -1,12 +1,11 @@
 import { getSummary, getTransactions, monthRange } from "@/lib/transactions";
 import { computeAppointmentStats, fetchAppointments, matchAppointmentCategory, buildServiceBreakdown, APPOINTMENT_CATEGORY_LABELS } from "@/lib/calendar";
 import { santiagoMonthString, shiftMonthString, santiagoMidnightUtc, parseDateOnly } from "@/lib/dates";
-import { formatCLP, formatDate } from "@/lib/format";
+import { formatCLP } from "@/lib/format";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
 import type { NailTransactionType, NailScope } from "@/lib/generated/prisma/enums";
-import { deleteTransactionAction, setTransactionScopeAction } from "./actions";
-import { DeleteButton } from "./DeleteButton";
-import { ScopePill } from "./ScopePill";
+import { deleteTransactionAction, updateTransactionAction } from "./actions";
+import { TransactionsTable } from "./TransactionsTable";
 import { MonthlyBarChart } from "./MonthlyBarChart";
 import { ChatPanel } from "./ChatPanel";
 import { TypeServiceFilter } from "./TypeServiceFilter";
@@ -117,14 +116,11 @@ export default async function DashboardPage({ searchParams }: Props) {
   const effectiveType = serviceType ? "INCOME" : scope === "PERSONAL" ? "EXPENSE" : type;
   const showIncomeCard = effectiveType !== "EXPENSE";
   const showExpenseCard = effectiveType !== "INCOME" && scope !== "PERSONAL";
-  const showNetCard = !effectiveType && !scope;
-  const showBusinessSection = showIncomeCard || showExpenseCard || showNetCard;
-  // Personal spending sits outside the business books - shown on its own,
-  // and only when there is something to show or it's what's being filtered.
-  const showPersonalCard =
-    effectiveType !== "INCOME" &&
-    scope !== "BUSINESS" &&
-    (summary.personalExpenseTotal > 0 || scope === "PERSONAL");
+  const showPersonalCard = effectiveType !== "INCOME" && scope !== "BUSINESS";
+  // Ganancia still holds under the Negocio filter (income is all business
+  // anyway); under Personal there is no income to net against.
+  const showNetCard = !effectiveType && scope !== "PERSONAL";
+  const scopeSectionTitle = scope === "BUSINESS" ? "Negocio" : scope === "PERSONAL" ? "Personal" : "General";
 
   // Appointment start times are real timestamps (not the UTC-midnight
   // stand-in transactions use), so their range boundaries need actual
@@ -311,13 +307,14 @@ export default async function DashboardPage({ searchParams }: Props) {
             </>
           )}
 
-          {showBusinessSection && (
+          {(showIncomeCard || showExpenseCard || showPersonalCard || showNetCard) && (
             <>
-              <h2 className="section-title">Negocio</h2>
-              {/* Fixed 2 columns rather than auto-fit: with auto-fit the two
+              <h2 className="section-title">{scopeSectionTitle}</h2>
+              {/* Fixed 2 columns rather than auto-fit: with auto-fit the
                   money tiles each landed in one of ~5 generated columns and
-                  looked cramped next to the full-width Ganancia below them. */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.9rem", marginBottom: showPersonalCard ? "1.5rem" : "2rem" }}>
+                  looked cramped. A 2x2 also holds up on a phone without any
+                  tile ending up alone in a half-empty row. */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.9rem", marginBottom: "2rem" }}>
                 {showIncomeCard && (
                   <div className="card" style={cardStyle}>
                     <div style={cardLabelStyle}>Ingresos</div>
@@ -332,26 +329,20 @@ export default async function DashboardPage({ searchParams }: Props) {
                     <div style={cardSubStyle}>{summary.businessExpenseCount} registros</div>
                   </div>
                 )}
+                {showPersonalCard && (
+                  <div className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>Gastos personales</div>
+                    <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.personalExpenseTotal)}</div>
+                    <div style={cardSubStyle}>{summary.personalExpenseCount} registros · fuera del negocio</div>
+                  </div>
+                )}
                 {showNetCard && (
-                  <div className="card" style={{ ...cardStyle, gridColumn: "1 / -1" }}>
+                  <div className="card" style={cardStyle}>
                     <div style={cardLabelStyle}>Ganancia</div>
                     <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
                     <div style={cardSubStyle}>ingresos menos gastos del negocio</div>
                   </div>
                 )}
-              </div>
-            </>
-          )}
-
-          {showPersonalCard && (
-            <>
-              <h2 className="section-title">Fuera del negocio</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "0.9rem", marginBottom: "2rem" }}>
-                <div className="card" style={cardStyle}>
-                  <div style={cardLabelStyle}>Gastos personales</div>
-                  <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.personalExpenseTotal)}</div>
-                  <div style={cardSubStyle}>{summary.personalExpenseCount} registros · no se descuentan de la ganancia</div>
-                </div>
               </div>
             </>
           )}
@@ -434,58 +425,27 @@ export default async function DashboardPage({ searchParams }: Props) {
             />
             {hasActiveFilters && <a href={clearFiltersHref("transacciones")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
           </form>
-          <div className="card" style={{ overflowX: "auto" }}>
-            <table className="pretty">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Descripción</th>
-                  <th style={{ textAlign: "right" }}>Monto</th>
-                  <th style={{ width: "40px" }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((t) => (
-                  <tr key={t.id}>
-                    <td>{formatDate(t.date)}</td>
-                    <td style={{ fontSize: "0.9rem" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-                        <span>{t.description}{t.clientName ? ` (${t.clientName})` : ""}</span>
-                        {/* Income is business by definition, so the pill
-                            would be dead weight on those rows. */}
-                        {t.type === "EXPENSE" && (
-                          <ScopePill
-                            id={t.id}
-                            scope={t.scope}
-                            action={setTransactionScopeAction}
-                            label={`${t.description} del ${formatDate(t.date)}`}
-                          />
-                        )}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: "right", color: t.type === "INCOME" ? "var(--income)" : "var(--expense)", fontWeight: 600 }}>
-                      {t.type === "INCOME" ? "+" : "-"}{formatCLP(Number(t.amount))}
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <DeleteButton
-                        id={t.id}
-                        action={deleteTransactionAction}
-                        label={`${t.description}${t.clientName ? ` (${t.clientName})` : ""} del ${formatDate(t.date)}, ${formatCLP(Number(t.amount))}`}
-                      />
-                    </td>
-                  </tr>
-                ))}
-                {transactions.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="table-empty" style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
-                      {hasActiveFilters
-                        ? "No hay transacciones con estos filtros"
-                        : "No hay transacciones. Escríbele a tu bot de WhatsApp para registrar un ingreso o gasto."}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="card">
+            <TransactionsTable
+              // Decimal and the Prisma row shape don't cross into a client
+              // component - hand it plain values.
+              rows={transactions.map((t) => ({
+                id: t.id,
+                date: t.date,
+                description: t.description,
+                clientName: t.clientName,
+                type: t.type,
+                scope: t.scope,
+                amount: Number(t.amount),
+              }))}
+              emptyMessage={
+                hasActiveFilters
+                  ? "No hay transacciones con estos filtros"
+                  : "No hay transacciones. Escríbele a tu bot de WhatsApp para registrar un ingreso o gasto."
+              }
+              onDelete={deleteTransactionAction}
+              onSave={updateTransactionAction}
+            />
           </div>
           {transactions.length === 200 && (
             <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "1rem" }}>

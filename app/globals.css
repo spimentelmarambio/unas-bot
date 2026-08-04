@@ -81,6 +81,48 @@ a:hover {
   transform: none;
 }
 
+/* Secondary action in a dialog: same shape as .btn, without competing with
+   the primary button sitting next to it. */
+.btn-ghost {
+  background: transparent;
+  color: var(--accent-dark);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: var(--pink-bg-2);
+  color: var(--accent-dark);
+}
+
+/* Transactions table: one line per description, full text in the dialog.
+   The cell needs max-width:0 so it can shrink below its content - without
+   it the cell just grows and the ellipsis never triggers. */
+.tx-desc-cell {
+  max-width: 0;
+  width: 100%;
+}
+
+.tx-desc {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.tx-row {
+  cursor: pointer;
+}
+
+.tx-row:hover {
+  background: var(--pink-bg-2);
+}
+
+.tx-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
 .input {
   padding: 0.6rem 0.8rem;
   border-radius: 8px;

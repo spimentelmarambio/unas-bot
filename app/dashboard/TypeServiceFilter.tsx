@@ -78,7 +78,9 @@ export function TypeServiceFilter({ defaultType, defaultService, defaultScope, s
           className="input"
           disabled={type === "INCOME"}
         >
-          <option value="ALL">Todos</option>
+          {/* "General" rather than "Todos": it's the view where the negocio
+              and personal figures sit side by side, not just an absent filter. */}
+          <option value="ALL">General</option>
           <option value="BUSINESS">Negocio</option>
           <option value="PERSONAL">Personal</option>
         </select>

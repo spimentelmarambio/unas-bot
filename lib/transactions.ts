@@ -124,11 +124,29 @@ export async function getTransactions(filter: TransactionFilter = {}, limit = 10
   return prisma.nailTransaction.findMany({ where, orderBy: { date: "desc" }, take: limit });
 }
 
-// The classifier gets it wrong sometimes ("compré tips" could be either),
-// and without this the only fix would be deleting the row and re-sending
-// the message from WhatsApp.
-export async function setTransactionScope(id: string, scope: NailScope) {
-  await prisma.nailTransaction.update({ where: { id }, data: { scope } });
+// The bot gets things wrong sometimes - a misheard amount, a gasto
+// classified as del negocio when it was personal. Without this the only
+// fix would be deleting the row and re-sending the message from WhatsApp.
+export async function updateTransaction(
+  id: string,
+  data: { amount: number; scope: NailScope }
+) {
+  const existing = await prisma.nailTransaction.findUnique({
+    where: { id },
+    select: { type: true },
+  });
+  if (!existing) {
+    throw new Error("La transacción ya no existe");
+  }
+  await prisma.nailTransaction.update({
+    where: { id },
+    data: {
+      amount: data.amount,
+      // Income is always the business - don't let a hand-crafted request
+      // move a service out of the books.
+      scope: existing.type === "INCOME" ? "BUSINESS" : data.scope,
+    },
+  });
 }
 
 export async function deleteTransaction(id: string) {
