@@ -339,16 +339,13 @@ export default async function DashboardPage({ searchParams }: Props) {
                   <div className="card" style={cardStyle}>
                     <div style={cardLabelStyle}>Gastos personales</div>
                     <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.personalExpenseTotal)}</div>
-                    <div style={cardSubStyle}>{summary.personalExpenseCount} registros · no son del negocio</div>
+                    <div style={cardSubStyle}>{summary.personalExpenseCount} registros</div>
                   </div>
                 )}
                 {showNetCard && (
                   <div className="card" style={cardStyle}>
                     <div style={cardLabelStyle}>Ganancia</div>
                     <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
-                    <div style={cardSubStyle}>
-                      {scope === "BUSINESS" ? "ingresos menos gastos del negocio" : "ingresos menos todos los gastos"}
-                    </div>
                   </div>
                 )}
               </div>
