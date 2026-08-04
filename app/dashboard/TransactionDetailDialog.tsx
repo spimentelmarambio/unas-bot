@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { formatCLP, formatDate } from "@/lib/format";
 import { SCOPE_LABELS, type Scope } from "@/lib/schemas/message";
 import { DeleteButton } from "./DeleteButton";
@@ -33,6 +34,11 @@ export function TransactionDetailDialog({ transaction, onClose, onSave, onDelete
   const [scope, setScope] = useState<Scope>(transaction?.scope ?? "BUSINESS");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // revalidatePath() in the action isn't enough to repaint the table: the
+  // rows are props handed down from the server component, and without an
+  // explicit refresh the saved row kept showing its old ámbito until a
+  // manual reload.
+  const router = useRouter();
 
   useEffect(() => {
     if (!transaction) return;
@@ -56,6 +62,7 @@ export function TransactionDetailDialog({ transaction, onClose, onSave, onDelete
     startTransition(async () => {
       try {
         await onSave(transaction.id, { amount: parsedAmount, scope });
+        router.refresh();
         onClose();
       } catch (e) {
         setError(e instanceof Error ? e.message : "No se pudo guardar, intentá de nuevo");
@@ -167,6 +174,7 @@ export function TransactionDetailDialog({ transaction, onClose, onSave, onDelete
             id={transaction.id}
             action={async (id) => {
               await onDelete(id);
+              router.refresh();
               onClose();
             }}
             label={`${transaction.description} del ${formatDate(transaction.date)}, ${formatCLP(transaction.amount)}`}
