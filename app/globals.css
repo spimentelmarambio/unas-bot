@@ -105,26 +105,31 @@ a:hover {
 
 /* Four columns on a ~400px phone leaves little room, and the default cell
    padding alone was eating 115px of it. Tightened here so the description
-   keeps the width instead. */
-.tx-table th,
-.tx-table td {
+   keeps the width instead. Qualified with table.pretty because the shared
+   `table.pretty td` padding rule below outranks a lone `.tx-table td`. */
+table.pretty.tx-table th,
+table.pretty.tx-table td {
   padding-left: 0.55rem;
   padding-right: 0.55rem;
 }
 
-/* Fecha: fixed-width numbers at a smaller size, so 5.4rem always fits. */
-.tx-table th:nth-child(1),
-.tx-table td:nth-child(1) {
-  width: 5.4rem;
+/* The three fixed columns are sized to their widest possible content -
+   "03/08/2026" a size smaller, "Personal", "-$49.090" - leaving the rest
+   of the row to the description. */
+table.pretty.tx-table th:nth-child(1),
+table.pretty.tx-table td:nth-child(1) {
+  width: 5.6rem;
   font-size: 0.8rem;
 }
 
-/* Ámbito and Monto: sized to their widest content ("Personal", "-$49.090"). */
-.tx-table th:nth-child(3),
-.tx-table td:nth-child(3),
-.tx-table th:nth-child(4),
-.tx-table td:nth-child(4) {
-  width: 5rem;
+table.pretty.tx-table th:nth-child(3),
+table.pretty.tx-table td:nth-child(3) {
+  width: 5.2rem;
+}
+
+table.pretty.tx-table th:nth-child(4),
+table.pretty.tx-table td:nth-child(4) {
+  width: 5.4rem;
 }
 
 .tx-desc {
