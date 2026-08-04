@@ -101,21 +101,22 @@ export async function getSummary(filter: TransactionFilter = {}) {
   const total = (rows: typeof entries) => rows.reduce((sum, e) => sum + Number(e.amount), 0);
 
   const incomeTotal = total(incomeEntries);
-  const businessExpenseTotal = total(businessExpenses);
+  // Every expense in the filter, business and personal together.
+  const expenseTotal = total(expenseEntries);
 
   return {
     incomeTotal,
     incomeCount: incomeEntries.length,
-    // Every expense in the filter, business and personal together.
-    expenseTotal: total(expenseEntries),
+    expenseTotal,
     expenseCount: expenseEntries.length,
-    businessExpenseTotal,
+    businessExpenseTotal: total(businessExpenses),
     businessExpenseCount: businessExpenses.length,
     personalExpenseTotal: total(personalExpenses),
     personalExpenseCount: personalExpenses.length,
-    // "Ganancia" del negocio: los gastos personales no se le descuentan,
-    // salen del bolsillo de ella, no de la caja del negocio.
-    net: incomeTotal - businessExpenseTotal,
+    // "Ganancia": lo que queda después de todo lo que salió, del negocio y
+    // personal. Subtracting whatever expenses the filter matched also makes
+    // this right under the Negocio filter, where there are no personal ones.
+    net: incomeTotal - expenseTotal,
   };
 }
 

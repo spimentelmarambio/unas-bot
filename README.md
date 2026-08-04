@@ -26,9 +26,11 @@ mensaje, junto con el monto y la descripción; si el mensaje lo dice explícito
 Los ingresos siempre son del negocio - el bot solo registra servicios - así que
 no llevan ámbito propio.
 
-Esto es lo que hace que la **Ganancia** signifique algo: es `ingresos - gastos
-del negocio`. Los gastos personales se muestran aparte, bajo "Fuera del
-negocio", y nunca se le descuentan.
+La separación es para *ver* en qué se va la plata, no para excluir nada: en la
+vista **General** el Resumen muestra las cuatro cifras juntas (ingresos, gastos
+del negocio, gastos personales y ganancia) y la **Ganancia** es `ingresos -
+gastos del negocio - gastos personales`. Con el filtro en **Negocio** la misma
+resta deja fuera los personales, porque no hay ninguno en ese conjunto.
 
 Cuando la clasificación sale mal, en la tabla de Transacciones cada gasto tiene
 una píldora Negocio/Personal que se cambia con un toque - no hace falta borrar

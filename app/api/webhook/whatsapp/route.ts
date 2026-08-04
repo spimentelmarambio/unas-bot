@@ -121,17 +121,17 @@ export async function POST(request: Request) {
       if (action.intent === "query_summary") {
         const summary = await getSummary(monthRange(action.month));
         const period = action.month ? "" : " este mes";
-        // Personal spending is reported apart and never netted against the
-        // business, so "Ganancia" answers "¿cuánto ganó el negocio?".
+        // The two buckets are reported apart so she can see where the plata
+        // went, but Ganancia nets both - same as the dashboard.
         const personal =
           summary.personalExpenseTotal > 0
-            ? ` Aparte, gastos personales: ${formatCLP(summary.personalExpenseTotal)}.`
+            ? ` Gastos personales: ${formatCLP(summary.personalExpenseTotal)}.`
             : "";
         summaryReply = `Ingresos${period}: ${formatCLP(summary.incomeTotal)} (${
           summary.incomeCount
         } servicios). Gastos del negocio: ${formatCLP(
           summary.businessExpenseTotal
-        )}. Ganancia: ${formatCLP(summary.net)}.${personal}`;
+        )}.${personal} Ganancia: ${formatCLP(summary.net)}.`;
       } else if (action.intent === "other") {
         sawOther = true;
       } else {
