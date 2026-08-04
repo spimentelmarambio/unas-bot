@@ -15,6 +15,9 @@ type Props = {
   defaultService: string;
   defaultScope: string;
   serviceOptions: { value: string; label: string }[];
+  // Resumen leaves this out: it always shows the General view, where the
+  // negocio and personal figures are both on screen anyway.
+  showScope?: boolean;
 };
 
 // A plain <select disabled={params.type === "EXPENSE"}> only reflects the
@@ -22,7 +25,13 @@ type Props = {
 // submitting first left "Servicio" looking selectable even though the
 // server ignores it once type is EXPENSE. Tracking both type and service
 // client-side keeps them in sync as the user picks, before they hit "Filtrar".
-export function TypeServiceFilter({ defaultType, defaultService, defaultScope, serviceOptions }: Props) {
+export function TypeServiceFilter({
+  defaultType,
+  defaultService,
+  defaultScope,
+  serviceOptions,
+  showScope = true,
+}: Props) {
   const [type, setType] = useState(defaultType);
   const [service, setService] = useState(defaultService);
   const [scope, setScope] = useState(defaultScope);
@@ -66,6 +75,7 @@ export function TypeServiceFilter({ defaultType, defaultService, defaultScope, s
       {/* Same reasoning as "Servicio" above, mirrored: income is always the
           business, so filtering it by ámbito can only ever return
           everything or nothing. */}
+      {showScope && (
       <label style={labelStyle}>
         Ámbito
         <select
@@ -85,6 +95,7 @@ export function TypeServiceFilter({ defaultType, defaultService, defaultScope, s
           <option value="PERSONAL">Personal</option>
         </select>
       </label>
+      )}
     </div>
   );
 }

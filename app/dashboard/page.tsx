@@ -76,7 +76,12 @@ export default async function DashboardPage({ searchParams }: Props) {
   const serviceType = type !== "EXPENSE" && isServiceType(params.service) ? params.service : undefined;
   // Income is always business, so an ámbito filter alongside "Ingresos"
   // would either be a no-op or blank the page - ignore it there.
-  const scope = type !== "INCOME" && isScope(params.scope) ? params.scope : undefined;
+  const scopeParam = type !== "INCOME" && isScope(params.scope) ? params.scope : undefined;
+  // Resumen is always the General view. Ingresos, gastos del negocio, gastos
+  // personales and ganancia are all on it already, so an ámbito filter there
+  // could only ever take one of them away. The param still travels in the
+  // URL so Transacciones keeps its filter when you bounce between sections.
+  const scope = section === "resumen" ? undefined : scopeParam;
 
   // Citas filters by appointment category label ("Gel X") while Resumen and
   // Transacciones filter by the transaction ServiceType enum ("GEL_X"), yet
@@ -287,7 +292,8 @@ export default async function DashboardPage({ searchParams }: Props) {
             <TypeServiceFilter
               defaultType={params.type ?? "ALL"}
               defaultService={params.service ?? "ALL"}
-              defaultScope={params.scope ?? "ALL"}
+              defaultScope="ALL"
+              showScope={false}
               serviceOptions={SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))}
             />
             {hasActiveFilters && <a href={clearFiltersHref("resumen")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
