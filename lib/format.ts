@@ -9,8 +9,14 @@ export function formatCLP(amount: number): string {
 // Transaction dates are stored as UTC midnight standing in for a Santiago
 // calendar day (see dateOnlyInSantiago), so they have to be read back in UTC
 // - formatting them in America/Santiago would shift every one a day earlier.
+//
+// Built by hand rather than through toLocaleDateString: es-CL renders the
+// numeric format with hyphens (03-08-2026), and the slashes are what was
+// asked for. Fixed-width too, which is why the column can be narrow.
 export function formatDate(date: Date): string {
-  return date.toLocaleDateString("es-CL", { timeZone: "UTC", day: "2-digit", month: "short", year: "numeric" });
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  return `${day}/${month}/${date.getUTCFullYear()}`;
 }
 
 // Appointments come from the Bookly ICS as real UTC instants, so they must be
