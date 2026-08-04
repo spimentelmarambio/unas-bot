@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { formatCLP, formatDate } from "@/lib/format";
 import { SCOPE_LABELS, type Scope } from "@/lib/schemas/message";
-import { DeleteButton } from "./DeleteButton";
 import { TransactionDetailDialog, type TransactionRow } from "./TransactionDetailDialog";
 
 type Props = {
@@ -41,13 +40,12 @@ export function TransactionsTable({ rows, emptyMessage, onDelete, onSave }: Prop
 
   return (
     <>
-      <table className="pretty">
+      <table className="pretty tx-table">
         <thead>
           <tr>
             <th>Fecha</th>
             <th>Descripción</th>
             <th style={{ textAlign: "right" }}>Monto</th>
-            <th style={{ width: "40px" }}></th>
           </tr>
         </thead>
         <tbody>
@@ -70,7 +68,7 @@ export function TransactionsTable({ rows, emptyMessage, onDelete, onSave }: Prop
               {/* max-width:0 + width:100% is what makes the ellipsis work
                   inside a table cell: it lets the cell shrink below its
                   content so the inner span can clip. */}
-              <td className="tx-desc-cell" style={{ fontSize: "0.9rem" }}>
+              <td style={{ fontSize: "0.9rem" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: "0.4rem", minWidth: 0 }}>
                   <span className="tx-desc">
                     {t.description}
@@ -90,20 +88,11 @@ export function TransactionsTable({ rows, emptyMessage, onDelete, onSave }: Prop
                 {t.type === "INCOME" ? "+" : "-"}
                 {formatCLP(t.amount)}
               </td>
-              {/* Stop the click here: the row opens the dialog, and a
-                  mis-tap that deleted a row instead would be unrecoverable. */}
-              <td style={{ textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
-                <DeleteButton
-                  id={t.id}
-                  action={onDelete}
-                  label={`${t.description}${t.clientName ? ` (${t.clientName})` : ""} del ${formatDate(t.date)}, ${formatCLP(t.amount)}`}
-                />
-              </td>
             </tr>
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={4} className="table-empty" style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
+              <td colSpan={3} className="table-empty" style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
                 {emptyMessage}
               </td>
             </tr>
@@ -117,6 +106,7 @@ export function TransactionsTable({ rows, emptyMessage, onDelete, onSave }: Prop
         transaction={selected}
         onClose={() => setSelected(null)}
         onSave={onSave}
+        onDelete={onDelete}
       />
     </>
   );

@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { formatCLP, formatDate } from "@/lib/format";
 import { SCOPE_LABELS, type Scope } from "@/lib/schemas/message";
+import { DeleteButton } from "./DeleteButton";
 
 export type TransactionRow = {
   id: string;
@@ -18,12 +19,13 @@ type Props = {
   transaction: TransactionRow | null;
   onClose: () => void;
   onSave: (id: string, data: { amount: number; scope: Scope }) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 };
 
 // The table truncates descriptions to one line, so this is where the full
 // text lives - and, since it's already the "look at this row" surface, also
 // where the two things the bot gets wrong (monto and ámbito) get fixed.
-export function TransactionDetailDialog({ transaction, onClose, onSave }: Props) {
+export function TransactionDetailDialog({ transaction, onClose, onSave, onDelete }: Props) {
   // The caller keys this component by transaction id, so each row opens a
   // fresh instance and these initialisers are the reset - no effect needed
   // to clear the previous row's edits.
@@ -154,6 +156,21 @@ export function TransactionDetailDialog({ transaction, onClose, onSave }: Props)
           >
             {isPending ? "Guardando…" : "Guardar"}
           </button>
+        </div>
+
+        {/* Deleting lives here rather than in the row: a destructive control
+            crammed next to the amount on a phone is one mis-tap away from
+            losing a record, and it was eating the width the description
+            needed. */}
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+          <DeleteButton
+            id={transaction.id}
+            action={async (id) => {
+              await onDelete(id);
+              onClose();
+            }}
+            label={`${transaction.description} del ${formatDate(transaction.date)}, ${formatCLP(transaction.amount)}`}
+          />
         </div>
       </div>
     </div>

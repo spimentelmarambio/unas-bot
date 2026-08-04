@@ -95,11 +95,19 @@ a:hover {
 }
 
 /* Transactions table: one line per description, full text in the dialog.
-   The cell needs max-width:0 so it can shrink below its content - without
-   it the cell just grows and the ellipsis never triggers. */
-.tx-desc-cell {
-  max-width: 0;
-  width: 100%;
+   table-layout:fixed is what makes the ellipsis possible - with the default
+   auto layout the cell just grows to fit the text, so a long description
+   widened the table and pushed the amount off the side of a phone. The two
+   narrow columns are pinned so the description gets everything else. */
+.tx-table {
+  table-layout: fixed;
+}
+
+.tx-table th:nth-child(1),
+.tx-table td:nth-child(1),
+.tx-table th:nth-child(3),
+.tx-table td:nth-child(3) {
+  width: 6.4rem;
 }
 
 .tx-desc {
