@@ -447,6 +447,12 @@ table.pretty tbody tr:hover {
     width: 100% !important;
   }
 
+  /* Tipo and Servicio pair up on the first row; Ámbito is the odd one out,
+     so it takes the whole second row instead of leaving a hole beside it. */
+  .filter-form > div.type-service-grid > label:nth-child(3) {
+    grid-column: 1 / -1 !important;
+  }
+
   form.filter-form--compact {
     padding: 0.75rem !important;
     gap: 0.6rem !important;

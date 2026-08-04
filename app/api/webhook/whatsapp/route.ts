@@ -62,11 +62,16 @@ async function runLoggingAction(
       type: "EXPENSE",
       amount: action.amount,
       description: action.description,
+      scope: action.scope,
       date: action.date ? parseDateOnly(action.date) : dateOnlyInSantiago(),
       whatsappFrom,
       whatsappMessageId,
     });
-    return `${action.description} -${formatCLP(action.amount)}`;
+    // Only personal gets tagged in the reply: business is the norm, so
+    // tagging both would just add noise to every confirmation. Seeing
+    // "(personal)" is also her cue that it got classified wrong.
+    const tag = action.scope === "PERSONAL" ? " (personal)" : "";
+    return `${action.description} -${formatCLP(action.amount)}${tag}`;
   }
   return null;
 }
@@ -116,9 +121,17 @@ export async function POST(request: Request) {
       if (action.intent === "query_summary") {
         const summary = await getSummary(monthRange(action.month));
         const period = action.month ? "" : " este mes";
+        // Personal spending is reported apart and never netted against the
+        // business, so "Ganancia" answers "¿cuánto ganó el negocio?".
+        const personal =
+          summary.personalExpenseTotal > 0
+            ? ` Aparte, gastos personales: ${formatCLP(summary.personalExpenseTotal)}.`
+            : "";
         summaryReply = `Ingresos${period}: ${formatCLP(summary.incomeTotal)} (${
           summary.incomeCount
-        } servicios). Gastos: ${formatCLP(summary.expenseTotal)}. Neto: ${formatCLP(summary.net)}.`;
+        } servicios). Gastos del negocio: ${formatCLP(
+          summary.businessExpenseTotal
+        )}. Ganancia: ${formatCLP(summary.net)}.${personal}`;
       } else if (action.intent === "other") {
         sawOther = true;
       } else {
@@ -130,14 +143,20 @@ export async function POST(request: Request) {
     let reply: string;
     if (loggedLines.length > 0) {
       const summary = await getSummary(monthRange());
+      const personal =
+        summary.personalExpenseTotal > 0
+          ? ` (más ${formatCLP(summary.personalExpenseTotal)} en gastos personales)`
+          : "";
       reply = `Anotado: ${loggedLines.join(", ")}. Llevas ${formatCLP(
         summary.incomeTotal
-      )} en ingresos y ${formatCLP(summary.expenseTotal)} en gastos este mes.`;
+      )} en ingresos y ${formatCLP(
+        summary.businessExpenseTotal
+      )} en gastos del negocio este mes${personal}.`;
     } else if (summaryReply) {
       reply = summaryReply;
     } else if (sawOther) {
       reply =
-        "Puedo anotar tus ingresos (ej: 'hice un esmaltado permanente de 15000'), tus gastos (ej: 'gasté 20000 en insumos'), o decirte cuánto llevas en el mes (ej: '¿cuánto llevo este mes?').";
+        "Puedo anotar tus ingresos (ej: 'hice un esmaltado permanente de 15000'), tus gastos del negocio (ej: 'gasté 20000 en insumos') o personales (ej: 'me compré galletas de 2000'), o decirte cuánto llevas en el mes (ej: '¿cuánto llevo este mes?').";
     } else {
       reply = "No entendí el mensaje, ¿podés reformularlo?";
     }

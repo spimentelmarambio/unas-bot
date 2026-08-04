@@ -21,6 +21,8 @@ Los datos incluyen:
 - monthlySeries: historial de citas de todos los meses disponibles (busca el mes que pregunta en esta lista)
 - Otros datos del mes actual
 
+Los gastos vienen separados en dos: "gastosDelNegocio" (insumos, materiales, publicidad) y "gastosPersonales" (cosas de ella que no son del negocio). La "ganancia" es ingresos menos gastos del negocio: los gastos personales NO se le descuentan. Si te preguntan cuánto gastó sin aclarar, respondé con los del negocio y mencioná los personales aparte.
+
 Respondé en 1-2 oraciones, concreto, sin rodeos. Usá los números del JSON tal cual. Si pregunta por otro mes, busca en monthlySeries. Si no hay datos para ese mes, decilo directamente.`;
 
 export async function answerDashboardQuestion(question: string, context: unknown): Promise<string> {

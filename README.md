@@ -12,8 +12,27 @@ Es un proyecto separado del tracker de gastos personal "Lukas", pero reutiliza l
    - Le pasa el texto a Claude (`lib/claude.ts`), que devuelve un intent estructurado: registrar un ingreso, registrar un gasto, consultar el resumen del mes, u otro.
    - Ejecuta la acción correspondiente contra la base de datos (`lib/transactions.ts`).
    - Responde por WhatsApp (`lib/whatsapp.ts`).
-3. `/dashboard` muestra el resumen del mes (ingresos, gastos, neto) y el historial de movimientos - protegido con HTTP Basic Auth (`proxy.ts` + `DASHBOARD_USERNAME`/`DASHBOARD_PASSWORD`).
+3. `/dashboard` muestra el resumen del mes (ingresos, gastos, ganancia) y el historial de movimientos - protegido con HTTP Basic Auth (`proxy.ts` + `DASHBOARD_USERNAME`/`DASHBOARD_PASSWORD`).
 4. (Opcional) Si está configurada `BOOKLY_CALENDAR_ICS_URL`, el dashboard también muestra cuántas citas se agendaron en Bookly ese mes, el promedio histórico, y los compara contra los ingresos registrados por WhatsApp (`lib/calendar.ts`, vía la librería `node-ical`) - útil para detectar servicios hechos que no se anotaron.
+
+## Gastos del negocio vs. personales
+
+No todo lo que ella anota es del negocio. Cada gasto queda marcado con un ámbito
+(`scope`): **Negocio** (insumos, esmaltes, lámpara, publicidad, arriendo del box)
+o **Personal** (galletas, Spotify, supermercado). Lo clasifica Claude al leer el
+mensaje, junto con el monto y la descripción; si el mensaje lo dice explícito
+("esto es personal"), eso manda, y si queda ambiguo cae en Negocio.
+
+Los ingresos siempre son del negocio - el bot solo registra servicios - así que
+no llevan ámbito propio.
+
+Esto es lo que hace que la **Ganancia** signifique algo: es `ingresos - gastos
+del negocio`. Los gastos personales se muestran aparte, bajo "Fuera del
+negocio", y nunca se le descuentan.
+
+Cuando la clasificación sale mal, en la tabla de Transacciones cada gasto tiene
+una píldora Negocio/Personal que se cambia con un toque - no hace falta borrar
+el registro ni reenviar el mensaje.
 
 ## Setup
 

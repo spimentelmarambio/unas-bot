@@ -40,11 +40,24 @@ enum NailServiceType {
   @@schema("unas_bot")
 }
 
+// Not every gasto she sends belongs to the business: "compré galletas" or
+// "pagué el Spotify" salen de su bolsillo, no del negocio. Splitting them
+// keeps "Ganancia" honest - only business costs are netted against income.
+enum NailScope {
+  BUSINESS
+  PERSONAL
+
+  @@schema("unas_bot")
+}
+
 model NailTransaction {
   id           String              @id @default(cuid())
   type         NailTransactionType
   amount       Decimal             @db.Decimal(14, 2)
   description  String
+  // Business vs personal. INCOME is always BUSINESS (the bot only logs
+  // services), so the default also backfills every pre-existing row.
+  scope        NailScope           @default(BUSINESS)
   // Only set for INCOME (always null for EXPENSE) - the classified service.
   serviceType  NailServiceType?
   // Only meaningful for INCOME (who got the service) - always null for EXPENSE.
@@ -60,6 +73,7 @@ model NailTransaction {
 
   @@index([date])
   @@index([type])
+  @@index([scope])
   @@index([serviceType])
   @@index([whatsappMessageId])
   @@schema("unas_bot")

@@ -22,8 +22,10 @@ export async function askDashboardQuestion(question: string, month: string): Pro
       resumen: {
         ingresos: summary.incomeTotal,
         serviciosRegistrados: summary.incomeCount,
-        gastos: summary.expenseTotal,
-        neto: summary.net,
+        gastosDelNegocio: summary.businessExpenseTotal,
+        gastosPersonales: summary.personalExpenseTotal,
+        gastosTotales: summary.expenseTotal,
+        ganancia: summary.net,
       },
       citas: appointmentStats
         ? {

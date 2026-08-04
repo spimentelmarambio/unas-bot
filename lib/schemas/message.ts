@@ -11,6 +11,16 @@ export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
   KAPPING: "Kapping",
 };
 
+// Whether a gasto came out of the business or out of her own pocket - keep
+// in sync with the NailScope enum in prisma/schema.prisma.
+export const SCOPES = ["BUSINESS", "PERSONAL"] as const;
+export type Scope = (typeof SCOPES)[number];
+
+export const SCOPE_LABELS: Record<Scope, string> = {
+  BUSINESS: "Negocio",
+  PERSONAL: "Personal",
+};
+
 const LogIncomeSchema = z.object({
   intent: z.literal("log_income"),
   amount: z.number().positive("El monto debe ser mayor a cero"),
@@ -26,6 +36,9 @@ const LogExpenseSchema = z.object({
   intent: z.literal("log_expense"),
   amount: z.number().positive("El monto debe ser mayor a cero"),
   description: z.string(),
+  // Required, not optional: with structured output Claude always fills it,
+  // and an expense with no scope would silently land in the business books.
+  scope: z.enum(SCOPES),
   date: z.string().optional(),
   note: z.string().optional(),
 });

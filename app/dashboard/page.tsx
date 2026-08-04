@@ -3,9 +3,10 @@ import { computeAppointmentStats, fetchAppointments, matchAppointmentCategory, b
 import { santiagoMonthString, shiftMonthString, santiagoMidnightUtc, parseDateOnly } from "@/lib/dates";
 import { formatCLP, formatDate } from "@/lib/format";
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, type ServiceType } from "@/lib/schemas/message";
-import type { NailTransactionType } from "@/lib/generated/prisma/enums";
-import { deleteTransactionAction } from "./actions";
+import type { NailTransactionType, NailScope } from "@/lib/generated/prisma/enums";
+import { deleteTransactionAction, setTransactionScopeAction } from "./actions";
 import { DeleteButton } from "./DeleteButton";
+import { ScopePill } from "./ScopePill";
 import { MonthlyBarChart } from "./MonthlyBarChart";
 import { ChatPanel } from "./ChatPanel";
 import { TypeServiceFilter } from "./TypeServiceFilter";
@@ -53,6 +54,10 @@ function isTransactionType(value: string | undefined): value is NailTransactionT
   return value === "INCOME" || value === "EXPENSE";
 }
 
+function isScope(value: string | undefined): value is NailScope {
+  return value === "BUSINESS" || value === "PERSONAL";
+}
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function isIsoDate(value: string | undefined): value is string {
@@ -60,7 +65,7 @@ function isIsoDate(value: string | undefined): value is string {
 }
 
 type Props = {
-  searchParams: Promise<{ month?: string; type?: string; service?: string; section?: string; from?: string; to?: string }>;
+  searchParams: Promise<{ month?: string; type?: string; service?: string; scope?: string; section?: string; from?: string; to?: string }>;
 };
 
 export default async function DashboardPage({ searchParams }: Props) {
@@ -70,6 +75,9 @@ export default async function DashboardPage({ searchParams }: Props) {
   const section = (params.section ?? "resumen") as "resumen" | "transacciones" | "citas";
   const type = isTransactionType(params.type) ? params.type : undefined;
   const serviceType = type !== "EXPENSE" && isServiceType(params.service) ? params.service : undefined;
+  // Income is always business, so an ámbito filter alongside "Ingresos"
+  // would either be a no-op or blank the page - ignore it there.
+  const scope = type !== "INCOME" && isScope(params.scope) ? params.scope : undefined;
 
   // Citas filters by appointment category label ("Gel X") while Resumen and
   // Transacciones filter by the transaction ServiceType enum ("GEL_X"), yet
@@ -92,11 +100,11 @@ export default async function DashboardPage({ searchParams }: Props) {
         end: customTo ? new Date(parseDateOnly(customTo).getTime() + 24 * 60 * 60 * 1000) : undefined,
       }
     : monthRange(month);
-  const hasActiveFilters = Boolean(type || serviceType || hasCustomRange);
+  const hasActiveFilters = Boolean(type || serviceType || scope || hasCustomRange);
 
   const [summary, transactions, allAppointments] = await Promise.all([
-    getSummary({ ...range, type, serviceType }),
-    getTransactions({ ...range, type, serviceType }, 200),
+    getSummary({ ...range, type, scope, serviceType }),
+    getTransactions({ ...range, type, scope, serviceType }, 200),
     fetchAppointments().catch((error) => {
       console.error("Error leyendo el calendario de Bookly:", error);
       return [];
@@ -104,10 +112,19 @@ export default async function DashboardPage({ searchParams }: Props) {
   ]);
   const appointmentStats = computeAppointmentStats(month, allAppointments);
 
-  const effectiveType = serviceType ? "INCOME" : type;
+  // Filtering by "Personal" leaves only expenses in the summary, so the
+  // income and ganancia tiles would read $0 rather than "not applicable".
+  const effectiveType = serviceType ? "INCOME" : scope === "PERSONAL" ? "EXPENSE" : type;
   const showIncomeCard = effectiveType !== "EXPENSE";
-  const showExpenseCard = effectiveType !== "INCOME";
-  const showNetCard = !effectiveType;
+  const showExpenseCard = effectiveType !== "INCOME" && scope !== "PERSONAL";
+  const showNetCard = !effectiveType && !scope;
+  const showBusinessSection = showIncomeCard || showExpenseCard || showNetCard;
+  // Personal spending sits outside the business books - shown on its own,
+  // and only when there is something to show or it's what's being filtered.
+  const showPersonalCard =
+    effectiveType !== "INCOME" &&
+    scope !== "BUSINESS" &&
+    (summary.personalExpenseTotal > 0 || scope === "PERSONAL");
 
   // Appointment start times are real timestamps (not the UTC-midnight
   // stand-in transactions use), so their range boundaries need actual
@@ -154,6 +171,7 @@ export default async function DashboardPage({ searchParams }: Props) {
     const qp = new URLSearchParams({ month: targetMonth, section });
     if (params.type) qp.set("type", params.type);
     if (params.service) qp.set("service", params.service);
+    if (params.scope) qp.set("scope", params.scope);
     return `/dashboard?${qp.toString()}`;
   }
 
@@ -166,6 +184,9 @@ export default async function DashboardPage({ searchParams }: Props) {
     if (params.service && section !== "citas" && newSection !== "citas") {
       qp.set("service", params.service);
     }
+    // Citas come from the Bookly calendar, which knows nothing about
+    // business/personal - carrying the filter there would be meaningless.
+    if (params.scope && newSection !== "citas") qp.set("scope", params.scope);
     if (customFrom) qp.set("from", customFrom);
     if (customTo) qp.set("to", customTo);
     return `/dashboard?${qp.toString()}`;
@@ -270,6 +291,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             <TypeServiceFilter
               defaultType={params.type ?? "ALL"}
               defaultService={params.service ?? "ALL"}
+              defaultScope={params.scope ?? "ALL"}
               serviceOptions={SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))}
             />
             {hasActiveFilters && <a href={clearFiltersHref("resumen")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
@@ -289,32 +311,50 @@ export default async function DashboardPage({ searchParams }: Props) {
             </>
           )}
 
-          <h2 className="section-title">Ingresos & Gastos</h2>
-          {/* Fixed 2 columns rather than auto-fit: with auto-fit the two
-              money tiles each landed in one of ~5 generated columns and
-              looked cramped next to the full-width Ganancia below them. */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.9rem", marginBottom: "2rem" }}>
-            {showIncomeCard && (
-              <div className="card" style={cardStyle}>
-                <div style={cardLabelStyle}>Ingresos</div>
-                <div style={{ ...cardValueStyle, color: "var(--income)" }}>{formatCLP(summary.incomeTotal)}</div>
-                <div style={cardSubStyle}>{summary.incomeCount} registros</div>
+          {showBusinessSection && (
+            <>
+              <h2 className="section-title">Negocio</h2>
+              {/* Fixed 2 columns rather than auto-fit: with auto-fit the two
+                  money tiles each landed in one of ~5 generated columns and
+                  looked cramped next to the full-width Ganancia below them. */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.9rem", marginBottom: showPersonalCard ? "1.5rem" : "2rem" }}>
+                {showIncomeCard && (
+                  <div className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>Ingresos</div>
+                    <div style={{ ...cardValueStyle, color: "var(--income)" }}>{formatCLP(summary.incomeTotal)}</div>
+                    <div style={cardSubStyle}>{summary.incomeCount} registros</div>
+                  </div>
+                )}
+                {showExpenseCard && (
+                  <div className="card" style={cardStyle}>
+                    <div style={cardLabelStyle}>Gastos del negocio</div>
+                    <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.businessExpenseTotal)}</div>
+                    <div style={cardSubStyle}>{summary.businessExpenseCount} registros</div>
+                  </div>
+                )}
+                {showNetCard && (
+                  <div className="card" style={{ ...cardStyle, gridColumn: "1 / -1" }}>
+                    <div style={cardLabelStyle}>Ganancia</div>
+                    <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
+                    <div style={cardSubStyle}>ingresos menos gastos del negocio</div>
+                  </div>
+                )}
               </div>
-            )}
-            {showExpenseCard && (
-              <div className="card" style={cardStyle}>
-                <div style={cardLabelStyle}>Gastos</div>
-                <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.expenseTotal)}</div>
-                <div style={cardSubStyle}>{summary.expenseCount} registros</div>
+            </>
+          )}
+
+          {showPersonalCard && (
+            <>
+              <h2 className="section-title">Fuera del negocio</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "0.9rem", marginBottom: "2rem" }}>
+                <div className="card" style={cardStyle}>
+                  <div style={cardLabelStyle}>Gastos personales</div>
+                  <div style={{ ...cardValueStyle, color: "var(--expense)" }}>{formatCLP(summary.personalExpenseTotal)}</div>
+                  <div style={cardSubStyle}>{summary.personalExpenseCount} registros · no se descuentan de la ganancia</div>
+                </div>
               </div>
-            )}
-            {showNetCard && (
-              <div className="card" style={{ ...cardStyle, gridColumn: "1 / -1" }}>
-                <div style={cardLabelStyle}>Ganancia</div>
-                <div style={{ ...cardValueStyle, color: "var(--accent-dark)" }}>{formatCLP(summary.net)}</div>
-              </div>
-            )}
-          </div>
+            </>
+          )}
           {summary.incomeCount === 0 && summary.expenseCount === 0 && !hasActiveFilters && (
             <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "-1rem", marginBottom: "2rem" }}>
               Aún no hay ingresos ni gastos registrados este mes. Escríbele a tu bot de WhatsApp para anotarlos (ej: &quot;hice un gel x de 20000&quot;).
@@ -389,6 +429,7 @@ export default async function DashboardPage({ searchParams }: Props) {
             <TypeServiceFilter
               defaultType={params.type ?? "ALL"}
               defaultService={params.service ?? "ALL"}
+              defaultScope={params.scope ?? "ALL"}
               serviceOptions={SERVICE_TYPES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))}
             />
             {hasActiveFilters && <a href={clearFiltersHref("transacciones")} aria-label="Limpiar filtros" style={{ fontSize: "0.75rem" }}>Limpiar</a>}
@@ -407,7 +448,21 @@ export default async function DashboardPage({ searchParams }: Props) {
                 {transactions.map((t) => (
                   <tr key={t.id}>
                     <td>{formatDate(t.date)}</td>
-                    <td style={{ fontSize: "0.9rem" }}>{t.description}{t.clientName ? ` (${t.clientName})` : ""}</td>
+                    <td style={{ fontSize: "0.9rem" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+                        <span>{t.description}{t.clientName ? ` (${t.clientName})` : ""}</span>
+                        {/* Income is business by definition, so the pill
+                            would be dead weight on those rows. */}
+                        {t.type === "EXPENSE" && (
+                          <ScopePill
+                            id={t.id}
+                            scope={t.scope}
+                            action={setTransactionScopeAction}
+                            label={`${t.description} del ${formatDate(t.date)}`}
+                          />
+                        )}
+                      </span>
+                    </td>
                     <td style={{ textAlign: "right", color: t.type === "INCOME" ? "var(--income)" : "var(--expense)", fontWeight: 600 }}>
                       {t.type === "INCOME" ? "+" : "-"}{formatCLP(Number(t.amount))}
                     </td>
