@@ -12,8 +12,8 @@ type Props = {
   onSave: (id: string, data: { amount: number; scope: Scope }) => Promise<void>;
 };
 
-// Income is business by definition, so tagging those rows would be noise -
-// the badge only says something on a gasto.
+// Shown on every row, income included: income is always del negocio, and
+// leaving those cells blank read as "missing" rather than "not applicable".
 function ScopeBadge({ scope }: { scope: Scope }) {
   const isPersonal = scope === "PERSONAL";
   return (
@@ -45,6 +45,7 @@ export function TransactionsTable({ rows, emptyMessage, onDelete, onSave }: Prop
           <tr>
             <th>Fecha</th>
             <th>Descripción</th>
+            <th>Ámbito</th>
             <th style={{ textAlign: "right" }}>Monto</th>
           </tr>
         </thead>
@@ -69,13 +70,13 @@ export function TransactionsTable({ rows, emptyMessage, onDelete, onSave }: Prop
                   inside a table cell: it lets the cell shrink below its
                   content so the inner span can clip. */}
               <td style={{ fontSize: "0.9rem" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: "0.4rem", minWidth: 0 }}>
-                  <span className="tx-desc">
-                    {t.description}
-                    {t.clientName ? ` (${t.clientName})` : ""}
-                  </span>
-                  {t.type === "EXPENSE" && <ScopeBadge scope={t.scope} />}
+                <span className="tx-desc">
+                  {t.description}
+                  {t.clientName ? ` (${t.clientName})` : ""}
                 </span>
+              </td>
+              <td>
+                <ScopeBadge scope={t.scope} />
               </td>
               <td
                 style={{
@@ -92,7 +93,7 @@ export function TransactionsTable({ rows, emptyMessage, onDelete, onSave }: Prop
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={3} className="table-empty" style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
+              <td colSpan={4} className="table-empty" style={{ color: "var(--muted)", textAlign: "center", padding: "2rem" }}>
                 {emptyMessage}
               </td>
             </tr>

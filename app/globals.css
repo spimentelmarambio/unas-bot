@@ -103,14 +103,28 @@ a:hover {
   table-layout: fixed;
 }
 
+/* Four columns on a ~400px phone leaves little room, and the default cell
+   padding alone was eating 115px of it. Tightened here so the description
+   keeps the width instead. */
+.tx-table th,
+.tx-table td {
+  padding-left: 0.55rem;
+  padding-right: 0.55rem;
+}
+
+/* Fecha: fixed-width numbers at a smaller size, so 5.4rem always fits. */
 .tx-table th:nth-child(1),
 .tx-table td:nth-child(1) {
   width: 5.4rem;
+  font-size: 0.8rem;
 }
 
+/* Ámbito and Monto: sized to their widest content ("Personal", "-$49.090"). */
 .tx-table th:nth-child(3),
-.tx-table td:nth-child(3) {
-  width: 6.4rem;
+.tx-table td:nth-child(3),
+.tx-table th:nth-child(4),
+.tx-table td:nth-child(4) {
+  width: 5rem;
 }
 
 .tx-desc {
